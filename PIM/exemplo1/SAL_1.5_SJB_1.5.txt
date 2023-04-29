@@ -1,0 +1,102 @@
+# hora do meteoro
+indice=0
+# ver coluna C
+#13:18:17 UTC do dia 19 de agosto de 2020
+ano=2020
+mes=8
+dia=19
+hora=13
+minuto=18
+segundo=17
+#pasta para os dados, nome do meteoro
+#nome do Meteoro estação e pela data
+meteorN=exemplo1SAL_1.5_SJB_1.5
+#massas para o pontos de queda kg -> sempre usar ',' se for grupo de massas
+massaPont=0.005,0.01,0.05,0.1,0.5,1,5,10,50,200
+#massaPont=500
+#densidade
+densMeteor=3.4e-3
+#coeficienta aerodinâmico
+CD=1.
+
+#integracão: massa do meteoro, tempo de integração (anos), passo de integração
+#massaInt deve constar em massaPont
+massaInt=200
+tInt=-200
+tIntStep=-0.01
+# tamanho para close enconteurs (em esfera de Hill)
+tamHill=5
+
+###################################################################
+#
+# opção
+# 1 coordenadas do meteoro
+# 2 dados da câmera em coordenadas horizontais
+# 3 dados da câmera em coordenadas equatoriais
+# 4 posição geográfica do meteoro e velocidade
+opcao=2
+#
+###################################################################
+#opcao 1
+#pontos e intervalo entre os pontos
+# 1 - GDOP1 e 2 - SMZ
+# lon1 coluna AP lat1 coluna AQ alt1 coluna AR
+# lon2 coluna AX lat2 coluna AV alt2 coluna AZ
+# deltaT - AE (cam1 ou cam2)
+ 
+P1lat=P1lat
+P1lon=P1lon
+P1alt=P1alt
+P2lat=P2lat
+P2lon=P2lon
+P2alt=P2alt
+deltaT=deltaT
+
+
+###################################################################
+#opcao 2 e 3 -  camera cam=1 ou 2
+#coordenada geográficas da Camera
+cam=1
+deltaT1=1.47
+deltaT2=1.47
+
+alt1=0.3
+lon1=-39.121899
+lat1=-8.0668
+alt2=0.53
+lon2=-38.762299
+lat2=-7.8616
+
+###opcao 2
+# NÃO USAR
+az1Ini=265.9918209
+h1Ini=28.6477469
+az2Ini=258.3574394
+h2Ini=20.8862475
+az1Fin=265.8729238
+h1Fin=19.0046508
+az2Fin=259.0455172
+h2Fin=13.8515161
+
+###opcao 3
+# 1- GDOP 2 - SMZ
+# raIni-  decIni - AL e AM
+# raFin-  decFin - AV e AW
+ra1Ini=ra1Ini
+dec1Ini=dec1Ini
+ra2Ini=ra2Ini
+dec2Ini=dec2Ini
+ra1Fin=ra1Fin
+dec1Fin=dec1Fin
+ra2Fin=ra2Fin
+dec2Fin=dec2Fin
+
+###opcao 4
+#coordenadas em graus, altitude em km
+#velocidade em km/s
+alt4d=alt4d
+lon4d=lon4d
+lat4d=lat4d
+Vx4d=Vx4d
+Vy4d=Vy4d
+Vz4d=Vz4d

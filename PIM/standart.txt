@@ -1,0 +1,102 @@
+# hora do meteoro
+indice=0
+# ver coluna C
+#13:18:17 UTC do dia 19 de agosto de 2020
+ano=ano
+mes=mes
+dia=dia
+hora=hora
+minuto=minuto
+segundo=segundo
+#pasta para os dados, nome do meteoro
+#nome do Meteoro estação e pela data
+meteorN=meteorN
+#massas para o pontos de queda kg -> sempre usar ',' se for grupo de massas
+massaPont=0.005,0.01,0.05,0.1,0.5,1,5,10,50,200
+#massaPont=500
+#densidade
+densMeteor=3.4e-3
+#coeficienta aerodinâmico
+CD=1.
+
+#integracão: massa do meteoro, tempo de integração (anos), passo de integração
+#massaInt deve constar em massaPont
+massaInt=200
+tInt=-200
+tIntStep=-0.01
+# tamanho para close enconteurs (em esfera de Hill)
+tamHill=5
+
+###################################################################
+#
+# opção
+# 1 coordenadas do meteoro
+# 2 dados da câmera em coordenadas horizontais
+# 3 dados da câmera em coordenadas equatoriais
+# 4 posição geográfica do meteoro e velocidade
+opcao=2
+#
+###################################################################
+#opcao 1
+#pontos e intervalo entre os pontos
+# 1 - GDOP1 e 2 - SMZ
+# lon1 coluna AP lat1 coluna AQ alt1 coluna AR
+# lon2 coluna AX lat2 coluna AV alt2 coluna AZ
+# deltaT - AE (cam1 ou cam2)
+ 
+P1lat=P1lat
+P1lon=P1lon
+P1alt=P1alt
+P2lat=P2lat
+P2lon=P2lon
+P2alt=P2alt
+deltaT=deltaT
+
+
+###################################################################
+#opcao 2 e 3 -  camera cam=1 ou 2
+#coordenada geográficas da Camera
+cam=cam
+deltaT1=deltaT1
+deltaT2=deltaT2
+
+alt1=alt1
+lon1=lon1
+lat1=lat1
+alt2=alt2
+lon2=lon2
+lat2=lat2
+
+###opcao 2
+# NÃO USAR
+az1Ini=az1Ini
+h1Ini=h1Ini
+az2Ini=az2Ini
+h2Ini=h2Ini
+az1Fin=az1Fin
+h1Fin=h1Fin
+az2Fin=az2Fin
+h2Fin=h2Fin
+
+###opcao 3
+# 1- GDOP 2 - SMZ
+# raIni-  decIni - AL e AM
+# raFin-  decFin - AV e AW
+ra1Ini=ra1Ini
+dec1Ini=dec1Ini
+ra2Ini=ra2Ini
+dec2Ini=dec2Ini
+ra1Fin=ra1Fin
+dec1Fin=dec1Fin
+ra2Fin=ra2Fin
+dec2Fin=dec2Fin
+
+###opcao 4
+#coordenadas em graus, altitude em km
+#velocidade em km/s
+alt4d=alt4d
+lon4d=lon4d
+lat4d=lat4d
+Vx4d=Vx4d
+Vy4d=Vy4d
+Vz4d=Vz4d
