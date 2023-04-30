@@ -1,27 +1,7 @@
-from astropy import units as u
-import time
-import rebound
-import folium
-import msise00
-import datetime
-from datetime import date,datetime, timedelta
-from datetime import datetime
-import pandas as pd
-import numpy as np
-from numpy import sin,cos,sqrt
-import pyproj
-from pyproj import Transformer
-from PyAstronomy import pyasl
-import pathlib
-import os
-import math
-import matplotlib.pyplot as plt
-from datetime import date, datetime
-import sympy as sym
 import variablesPIM as variables
 import createFileInput
-import PIMRun as PIMR
-import PIMTrajectory as PIMT
+import PIMRun
+import PIMTrajectory
 import validationPIM
 import warnings
 
@@ -70,8 +50,8 @@ def integration(filesToRun):
     for i,text in enumerate(filesToRun):
         if (text[0] != '#' and text[0] != '\n'):
             text = text[:-1]            # remove \n
-            PIMR.PIMRun(text)           # atmosphere (ground and then up to 1000 km altitude)
-            PIMT.PIMTrajectory(text)    # space (from 1000 km altitude)
+            PIMRun.PIMRun(text)           # atmosphere (ground and then up to 1000 km altitude)
+            PIMTrajectory.PIMTrajectory(text)    # space (from 1000 km altitude)
 
 def continueIntegration ():
     """

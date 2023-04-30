@@ -1,24 +1,15 @@
 from astropy import units as u
 import time
 import rebound
-import folium
-import msise00
 import datetime
-from datetime import date,datetime, timedelta
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from numpy import sin,cos,sqrt
-import pyproj
 from pyproj import Transformer
-from PyAstronomy import pyasl
 import pathlib
-import os
-import math
 import matplotlib.pyplot as plt
-from datetime import date, datetime
 import sympy as sym
-import variablesPIM as variaveis
 
 def earthR(lonMedia,latMedia):
     lon = np.rad2deg(lonMedia)

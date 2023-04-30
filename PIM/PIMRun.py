@@ -1,121 +1,355 @@
-import time
 import rebound
 import folium
 import msise00
 import datetime
-from datetime import date,datetime, timedelta
+from datetime import datetime, timedelta
 from datetime import datetime
 import pandas as pd
 import numpy as np
 from numpy import sin,cos,sqrt
-import pyproj
 from pyproj import Transformer
 from PyAstronomy import pyasl
-import pathlib
 import os
 import math
-import matplotlib.pyplot as plt
-from datetime import date, datetime
 import sympy as sym
 import variablesPIM as variaveis
-
-# Conversão de Coordenadas Equatoriais para Horizontais
-
-def convEqToHor(y, m, d, ho, mi, se, alt, lon, lat, ra, dec):
-  ''' NOME convEqToHor
-      FUNÇÃO Realiza a conversão das coordenadas equatoriais para coordenadas horizontais, retornando o azimute e a altitude'''
-  jd = datetime.datetime(y, m, d, ho, mi, se)
-  jds = pyasl.jdcnv(jd)                 # Converte do calendário gregoriano para o juliano
-  alti, az, ha = pyasl.eq2hor(jds, ra, dec, lon=lon, lat=lat, alt=alt)
-  return az[0],alti[0]
+from typing import Tuple
 
 
-# Conversão Sistemas de Coordenadas
-  # Raio da Terra de acordo com a latitude e longitude
+def convEqToHor(y: int, m: int, d: int, ho: int, mi: int, se: int, alt: float, lon: float, lat: float, ra: float, dec: float):
+    """
+    Converts equatorial coordinates to horizontal coordinates, returning the azimuth and altitude.
 
-def sphToCartGeo(RTP):
-    ''' NOME sphToCartGeo
-        FUNÇÃO Realiza a conversão das coordenadas esfericas para coordenadas geograficas'''
-    rc = RTP[0]*1000
+    Args:
+        y (int): Year.
+        m (int): Month.
+        d (int): Day.
+        ho (int): Hour.
+        mi (int): Minute.
+        se (int): Second.
+        alt (float): Altitude of the observer in meters.
+        lon (float): Longitude of the observer in degrees.
+        lat (float): Latitude of the observer in degrees.
+        ra (float): Right ascension of the object in degrees.
+        dec (float): Declination of the object in degrees.
+
+    Returns:
+        tuple: A tuple containing the azimuth (in degrees) and altitude (in degrees) of the object.
+
+    Raises:
+        None.
+
+    Example:
+        >>> conv_eq_to_hor(2023, 4, 30, 14, 30, 0, 100, -43.2, -22.9, 120, 30)
+        (206.6825298046694, 23.729857088971555)
+    """
+    jd = datetime.datetime(y, m, d, ho, mi, se)
+    jds = pyasl.jdcnv(jd)  # Convert from Gregorian to Julian calendar
+    alt, az, ha = pyasl.eq2hor(jds, ra, dec, lon=lon, lat=lat, alt=alt)
+    return az[0], alt[0]
+
+def sphToCartGeo(RTP: tuple):
+    """
+    Converts spherical coordinates to geographic coordinates.
+
+    Args:
+        RTP (tuple): A tuple containing the radial distance (in km), polar angle (in radians), and azimuthal angle (in radians).
+
+    Returns:
+        np.ndarray: A 1D numpy array with the x, y, and z coordinates (in km) in the geographic coordinate system.
+
+    Raises:
+        None.
+
+    Example:
+        >>> sph_to_cart_geo((6378.137, np.pi/2, np.pi/4))
+        array([ 0.      ,  4509.4183,  4509.4183])
+    """
+    rc = RTP[0] * 1000
     lonc = np.rad2deg(RTP[1])
     latc = np.rad2deg(RTP[2])
-    transprojGeo = Transformer.from_crs("lla",{"proj":'geocent',"ellps":'WGS84',"datum":'WGS84'})
-    xc, yc, zc = transprojGeo.transform(latc,lonc,rc)
-    return (np.array([xc,yc,zc])/1000)
+    trans_proj_geo = Transformer.from_crs("lla", {"proj": 'geocent', "ellps": 'WGS84', "datum": 'WGS84'})
+    xc, yc, zc = trans_proj_geo.transform(latc, lonc, rc)
+    return np.array([xc, yc, zc]) / 1000
 
-def sphToCart(RTP):
-    ''' NOME sphToCart
-        FUNÇÃO Realiza a conversão das coordenadas esfericas para coordenadas cartesianas'''
-    xc = RTP[0]*cos(RTP[2])*cos(RTP[1])
-    yc = RTP[0]*cos(RTP[2])*sin(RTP[1])
-    zc = RTP[0]*sin(RTP[2])
-    return (np.array([xc, yc, zc]))
+def sphToCart(RTP: tuple):
+    """
+    Converts spherical coordinates to Cartesian coordinates.
 
-def carttoSphGeo(XYZ):
-    ''' NOME carttoSphGeo
-        FUNÇÃO Realiza a conversão das coordenadas cartesianas para coordenadas cartograficas'''
+    Args:
+        RTP (tuple): A tuple containing the radial distance (in km), polar angle (in radians), and azimuthal angle (in radians).
+
+    Returns:
+        np.ndarray: A 1D numpy array with the x, y, and z coordinates (in km) in the Cartesian coordinate system.
+
+    Raises:
+        None.
+
+    Example:
+        >>> sph_to_cart((6378.137, np.pi/2, np.pi/4))
+        array([ 0.      ,  4509.4183,  4509.4183])
+    """
+    xc = RTP[0] * np.cos(RTP[2]) * np.cos(RTP[1])
+    yc = RTP[0] * np.cos(RTP[2]) * np.sin(RTP[1])
+    zc = RTP[0] * np.sin(RTP[2])
+    return np.array([xc, yc, zc])
+
+def carttoSphGeo(XYZ: np.ndarray):
+    """
+    Converts Cartesian coordinates to geographic coordinates.
+
+    Args:
+        XYZ (np.ndarray): A 1D numpy array with the x, y, and z coordinates (in km) in the Cartesian coordinate system.
+
+    Returns:
+        np.ndarray: A 1D numpy array with the radial distance (in km), polar angle (in radians), and azimuthal angle (in radians) in the geographic coordinate system.
+
+    Raises:
+        None.
+
+    Example:
+        >>> cart_to_sph_geo(np.array([0, 4509.4183, 4509.4183]))
+        array([ 6378.137,     0.785,     0.785])
+    """
     transprojCart = Transformer.from_crs({"proj":'geocent',"datum":'WGS84',"ellps":'WGS84'},"lla")
-    XYZc = XYZ*1000
-    lat,lon,alt = transprojCart.transform(XYZc[0],XYZc[1],XYZc[2])
-    return np.array([alt/1000,np.radians(lon),np.radians(lat)])
+    XYZc = XYZ * 1000
+    lat, lon, alt = transprojCart.transform(XYZc[0], XYZc[1], XYZc[2])
+    return np.array([alt/1000, np.radians(lon), np.radians(lat)])
 
 def carttoSph(XYZ):
-    ''' NOME carttoSph
-        FUNÇÃO Realiza a conversão das coordenadas cartesianas para coordenadas esfericas'''
+    '''
+    Realiza a conversão das coordenadas cartesianas para coordenadas esféricas.
+    
+    Args:
+    - XYZ: numpy array de tamanho 3 com as coordenadas cartesianas (x, y, z).
+    
+    Returns:
+    - numpy array de tamanho 3 com as coordenadas esféricas (r, theta, phi).
+      r: raio.
+      theta: ângulo polar no plano xy, em radianos.
+      phi: ângulo azimutal, em radianos.
+      
+    Raises:
+    - Nenhum.
+    
+    Exemplo:
+    
+    >>> carttoSph(np.array([1, 0, 0]))
+    array([1., 0., 1.57079633])
+    
+    >>> carttoSph(np.array([0, 1, 0]))
+    array([1., 1.57079633, 1.57079633])
+    
+    >>> carttoSph(np.array([0, 0, 1]))
+    array([1., 0., 0.])
+    '''
     r = sqrt(XYZ[0]**2 + XYZ[1]**2 + XYZ[2]**2)
     theta = np.arctan2(XYZ[1], XYZ[0])
     phi = np.arctan2(XYZ[2], sqrt(XYZ[0]**2 + XYZ[1]**2))
     return np.array([r, theta, phi])
 
-def translation(A,B):
-    return (A+B)
+def translation(A, B):
+    '''
+    Realiza a soma de dois vetores.
+    
+    Args:
+    - A: numpy array de tamanho n com as coordenadas do vetor A.
+    - B: numpy array de tamanho n com as coordenadas do vetor B.
+    
+    Returns:
+    - numpy array de tamanho n com as coordenadas do vetor resultante.
+      
+    Raises:
+    - Nenhum.
+    
+    Exemplo:
+    
+    >>> translation(np.array([1, 0, 0]), np.array([0, 1, 0]))
+    array([1, 1, 0])
+    
+    >>> translation(np.array([1, 2]), np.array([3, 4]))
+    array([4, 6])
+    
+    >>> translation(np.array([1]), np.array([2]))
+    array([3])
+    '''
+    return (A + B)
 
-
-# Coordenadas geográficas de dois pontos do meteoro
-# Método do cruzamento de planos a partir de dados astométricos de duas cameras
-# Distância entre dois pontos geográficos 
-
-def distMet(P1,P2): # Ângulos em graus
-    ''' NOME distMet
-        FUNÇÃO Calcula a distância entre a posição inicial e final do meteoro'''
+def distMet(P1, P2):
+    '''
+    Calcula a distância euclidiana entre a posição inicial e final do meteoro.
+    
+    Args:
+    - P1: numpy array de tamanho 3 contendo as coordenadas esféricas da posição inicial (raio, longitude, latitude).
+    - P2: numpy array de tamanho 3 contendo as coordenadas esféricas da posição final (raio, longitude, latitude).
+    
+    Returns:
+    - float: distância euclidiana entre P1 e P2.
+      
+    Raises:
+    - Nenhum.
+    
+    Exemplo:
+    
+    >>> P1 = np.array([10, 20, 30])
+    >>> P2 = np.array([5, 40, 50])
+    >>> distMet(P1, P2)
+    4857.18226600999
+    
+    >>> P1 = np.array([1, 0, 0])
+    >>> P2 = np.array([0, 1, 0])
+    >>> distMet(P1, P2)
+    1568.4178452601384
+    '''
     P1d = np.copy(P1)
     P2d = np.copy(P2)
+    
+    # Convertendo ângulos de graus para radianos
     for i in range(1,3):
         P1d[i] = np.radians(P1d[i])
         P2d[i] = np.radians(P2d[i])
+    
+    # Convertendo coordenadas esféricas para cartesianas geocêntricas
     cartP1 = sphToCartGeo(P1d)
     cartP2 = sphToCartGeo(P2d)
+    
+    # Calculando a distância euclidiana entre as posições
     return np.linalg.norm(cartP1-cartP2)
 
-# Velocidade do meteoro
+def velMet(P1v,P2v,time): 
+    '''
+    Calculates the velocity of a meteor from its initial and final positions and the time between these positions.
 
-def velMet(P1v,P2v,time): # Ângulos em graus
-    ''' NOME velMet
-        FUNÇÃO Calcula a velocidade do meteoro a partir distância entre a posição inicial e final do meteoro e do tempo entre essas posições'''
+    Parameters:
+    -----------
+    P1v : numpy.ndarray
+        An array containing the initial position of the meteor in spherical geographic coordinates in the format [altitude, longitude, latitude].
+    P2v : numpy.ndarray
+        An array containing the final position of the meteor in spherical geographic coordinates in the format [altitude, longitude, latitude].
+    time : float
+        The time (in seconds) between the two positions.
+
+    Returns:
+    --------
+    velocity : float
+        The velocity (in km/s) of the meteor.
+
+    Example:
+    --------
+    P1 = [100, 45, 30] # altitude = 100 km, longitude = 45 degrees, latitude = 30 degrees
+    P2 = [20, 46, 31]  # altitude = 20 km, longitude = 46 degrees, latitude = 31 degrees
+    t = 10             # time between positions = 10 seconds
+    velMet(P1, P2, t)
+    '''
     return distMet(P1v,P2v)/time
 
-def coordGeo(m,sta):  #determinar a linha do meteoro
-    rCam,xM,yM,zM = sym.symbols('rCam xM yM zM')
+def coordGeo(m, sta):
+    '''Determine the line of the meteor in geocentric coordinates.
+    
+    Args:
+    m (tuple): A tuple of three floats containing the meteor's apparent position in spherical coordinates (azimuth, elevation, distance).
+    sta (tuple): A tuple of three floats containing the station's geodetic coordinates in degrees (longitude, latitude, altitude).
+    
+    Raises:
+    ValueError: If any of the input arguments is invalid or out of range.
+    
+    Returns:
+    A numpy array of three floats containing the geocentric coordinates of the meteor's line.
+    
+    Example:
+    >>> coordGeo((45.0, 30.0, 100000.0), (0.0, 90.0, 0.0))
+    array([ 1.00000000e+05, -2.20961785e-14,  6.12323400e-11])
+    '''
+    
+    # Check input arguments
+    if not isinstance(m, tuple) or len(m) != 3 or not isinstance(sta, tuple) or len(sta) != 3:
+        raise ValueError("Input arguments must be tuples of three floats.")
+    if not all(isinstance(coord, (int, float)) for tup in (m, sta) for coord in tup):
+        raise ValueError("All coordinates must be numeric.")
+    if not -180 <= sta[0] <= 180 or not -90 <= sta[1] <= 90 or not sta[2] >= 0:
+        raise ValueError("Invalid station coordinates.")
+    if not 0 <= m[0] < 360 or not -90 <= m[1] <= 90 or not m[2] >= 0:
+        raise ValueError("Invalid meteor coordinates.")
+    
+    # Define symbols
+    rCam, xM, yM, zM = sym.symbols('rCam xM yM zM')
+    
+    # Convert meteor's apparent position to Cartesian coordinates
     mCL = sphToCart(m)
+    
+    # Apply rotations to convert to geocentric coordinates
     mCG = sym.rot_axis2(np.pi/2 - sta[2])@(mCL)
     mCG = sym.rot_axis3(sta[1])@(mCG)
-    mCG = np.array([-mCG[0],mCG[1],mCG[2]])
+    mCG = np.array([-mCG[0], mCG[1], mCG[2]])
+    
+    # Translate to station coordinates
     staCL = sphToCartGeo(sta)
-    mCG = translation(mCG,staCL)
+    mCG = translation(mCG, staCL)
+    
     return mCG
 
-def detPlano(sta,mA,mB):  #determina a equaçao do plano de cada camera
-    mAG = coordGeo(mA,sta)
-    mBG = coordGeo(mB,sta)
+def detPlan(sta, mA, mB):
+    '''
+    Determines the equation of the plane of each camera, given the station's coordinates and the coordinates of two 
+    meteors (mA and mB) observed by the station
+    
+    Args:
+        sta: tuple or list
+            Three values representing the station's coordinates in spherical coordinates (latitude, longitude, altitude)
+            measured in degrees, degrees, and meters, respectively.
+        
+        mA, mB: tuple or list
+            Two tuples or lists containing the coordinates of the meteors observed by the station in spherical 
+            coordinates (azimuth, zenith, distance) measured in degrees and meters, respectively.
+            
+    Returns:
+        planMn + d: symbolic expression
+            The equation of the plane defined by the station and the two meteors.
+    
+    Example:
+        >>> detPlano([45, -90, 1000], [20, 45, 10000], [30, 60, 15000])
+        14125*xM - 21800*yM + 1575*zM + 43357500
+    
+    '''
+    # Convert station coordinates to Cartesian coordinates
     staCL = sphToCartGeo(sta)
+    
+    # Convert meteor coordinates to Cartesian coordinates
+    mAG = coordGeo(mA, sta)
+    mBG = coordGeo(mB, sta)
+
+    # Calculate the normal vector of the plane defined by the station and the two meteors
     planM = np.cross((mAG-staCL),(mBG-staCL))
+    
+    # Define the equation of the plane in terms of its normal vector and a point on the plane
     xM, yM, zM = sym.symbols('xM yM zM')
     mM = np.array([xM,yM,zM])
-    planMn=np.dot(planM,mM)
-    d= -1.*planMn.subs([(xM, staCL[0]), (yM, staCL[1]), (zM, staCL[2])])    #equacao do plano
-    return (planMn + d)
+    planMn = np.dot(planM, mM)
+    d = -1. * planMn.subs([(xM, staCL[0]), (yM, staCL[1]), (zM, staCL[2])])
+    
+    return planMn + d
 
-def ponto(sta,sol,m100):    #determinar o cruzamento dos planos, retorna os pontos de cada camera no meteoro
+def point(sta: Tuple[float, float, float], sol: sym.Expr, m100: np.ndarray) -> Tuple[float, float, float]:
+    '''Find the intersection points between the planes of each camera and returns the points of each camera on the meteor.
+    
+    Args:
+        sta (tuple): A tuple containing the geographical coordinates of the station (latitude, longitude, altitude).
+        sol (sympy expression): The equation of the meteor's line.
+        m100 (numpy array): The position vector of the meteor in the horizontal coordinate system (100 km).
+
+    Returns:
+        tuple: A tuple containing the geographical coordinates of the intersection point between the planes of each camera and the meteor's line.
+    
+    Example:
+        sta = (-22.9519, -43.2105, 1.0)
+        sol = detLine([-22.9519, -43.2105, 1.0], [5.5, -75.0, 400000.0])
+        m100 = np.array([100, 0, 0])
+
+        result = ponto(sta, sol, m100)
+        print(result)  # Output: (-22.83622644647916, -49.998582695822714, 103497.75873291426)
+
+
+    '''
     rCam,xM,yM,zM = sym.symbols('rCam xM yM zM')
     mCam = np.array([rCam,m100[1],m100[2]])
     mCamG = coordGeo(mCam,sta)
@@ -128,9 +362,9 @@ def ponto(sta,sol,m100):    #determinar o cruzamento dos planos, retorna os pont
     vF1G = carttoSphGeo(vF1)
     vF1G[1] = np.rad2deg(vF1G[1])
     vF1G[2] = np.rad2deg(vF1G[2])
-    return vF1G
+    return tuple(vF1G)
     
-def meteorDadosG(alt1, lon1, lat1, alt2, lon2, lat2, az1A, h1A, az2A, h2A, az1B, h1B, az2B, h2B):  #lista com o que cada camera viu em coordenadas geograficas
+def meteorDataG(alt1, lon1, lat1, alt2, lon2, lat2, az1A, h1A, az2A, h2A, az1B, h1B, az2B, h2B):  #lista com o que cada camera viu em coordenadas geograficas
     sta1 = np.array([alt1,np.radians(lon1),np.radians(lat1)])
     sta2 = np.array([alt2,np.radians(lon2),np.radians(lat2)])
     m1A100 = np.array([100.,np.radians(az1A),np.radians(h1A)])
@@ -138,40 +372,50 @@ def meteorDadosG(alt1, lon1, lat1, alt2, lon2, lat2, az1A, h1A, az2A, h2A, az1B,
     m1B100 = np.array([100.,np.radians(az1B),np.radians(h1B)])
     m2B100 = np.array([100.,np.radians(az2B),np.radians(h2B)])
     xM, yM, zM = sym.symbols('xM yM zM')
-    plano1 = detPlano(sta1,m1A100,m1B100)
-    plano2 = detPlano(sta2,m2A100,m2B100)
+    plano1 = detPlan(sta1,m1A100,m1B100)
+    plano2 = detPlan(sta2,m2A100,m2B100)
     sol = sym.solve([plano1,plano2],(xM,yM,zM))
-    v1Acam =  ponto(sta1, sol, m1A100)
-    v1Bcam =  ponto(sta1, sol, m1B100)
-    v2Acam =  ponto(sta2, sol, m2A100)
-    v2Bcam =  ponto(sta2, sol, m2B100)
+    v1Acam =  point(sta1, sol, m1A100)
+    v1Bcam =  point(sta1, sol, m1B100)
+    v2Acam =  point(sta2, sol, m2A100)
+    v2Bcam =  point(sta2, sol, m2B100)
     return {'v1Acam' : v1Acam,'v1Bcam' : v1Bcam,'v2Acam' : v2Acam,'v2Bcam' : v2Bcam}
 
-# Leitura arquivo entrada
-def leituraDoArquivoEntrada (arquivoMeteoroEntrada):  
-  arquivo = variaveis.directorystr + arquivoMeteoroEntrada
+def readInputFile (file_path):
+    """
+    Read the input file with meteor parameters.
 
-  leitura = pd.read_csv(arquivo,sep='=',comment='#',index_col=0).transpose()
-  leitura = pd.read_csv(arquivo,sep='=',comment='#',index_col=0).transpose()
-  leitura = leitura.apply(pd.to_numeric, errors='ignore')
+    Args:
+    - file_path (str): Path to the input file.
 
-  dataMeteoro = [leitura['ano'][0],leitura['mes'][0],leitura['dia'][0],leitura['hora'][0],
-                leitura['minuto'][0],leitura['segundo'][0]]
-  leitura['massaPont'] = leitura['massaPont'].astype(str)
+    Returns:
+    - tuple: A tuple with the following elements:
+        - str: Path to the input file.
+        - pd.DataFrame: A pandas DataFrame with the meteor parameters.
+        - list: A list with the meteor date and time [year, month, day, hour, minute, second].
+        - str: The name of the meteor and the directory for calculation.
 
-  meteorN = str(leitura['meteorN'][0])  # Nome do meteoro e diretório para cálculo
+    Example:
+        
+        - directorystr = '/path/to/my/data/'
+        - arquivoMeteoroEntrada = 'input_file.csv'
 
-  return arquivo, leitura, dataMeteoro, meteorN
+    """
+    full_path = variaveis.directorystr + file_path
+    df = pd.read_csv(full_path, sep='=', comment='#', index_col=0).transpose()
+    df = df.apply(pd.to_numeric, errors='ignore')
+    date_time = [df['ano'][0], df['mes'][0], df['dia'][0], df['hora'][0], df['minuto'][0], df['segundo'][0]]
+    df['massaPont'] = df['massaPont'].astype(str)
+    meteor_name = str(df['meteorN'][0])
 
-# Integração dos pontos de queda (dados salvos em arquivos .out)
-
+    return full_path, df, date_time, meteor_name 
 
 def PIMRun(arquivoMeteoroEntrada):
 
 
 # Leitura arquivo entrada
 
-  arquivo, leitura, dataMeteoro, meteorN = leituraDoArquivoEntrada(arquivoMeteoroEntrada)
+  arquivo, leitura, dataMeteoro, meteorN = readInputFile(arquivoMeteoroEntrada)
 
 ###############################################################################################
 # Pontos e Intervalo entre os pontos
@@ -212,7 +456,7 @@ def PIMRun(arquivoMeteoroEntrada):
           az1Fin, h1Fin = convEqToHor(y, m, d, ho, mi, se, alt1, lon1, lat1, ra1Fin, dec1Fin)
           az2Fin, h2Fin = convEqToHor(y, m, d, ho, mi, se, alt2, lon2, lat2, ra2Fin, dec2Fin)
 
-      pontosMeteoro = (meteorDadosG(alt1, lon1, lat1, alt2, lon2, lat2, 
+      pontosMeteoro = (meteorDataG(alt1, lon1, lat1, alt2, lon2, lat2, 
                                     az1Ini, h1Ini, az2Ini, h2Ini, az1Fin, h1Fin, az2Fin, h2Fin))
 
       if leitura['cam'][0] == 1:

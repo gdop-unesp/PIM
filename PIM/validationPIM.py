@@ -1,14 +1,5 @@
-import pandas as pd
-import numpy as np
 import pathlib
 import os
-import shutil
-import sys
-import matplotlib.pyplot as plt
-from datetime import date, datetime
-from bs4 import BeautifulSoup
-import xml.etree.ElementTree as ET 
-import xmltodict
 import variablesPIM  
 
 
