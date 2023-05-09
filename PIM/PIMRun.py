@@ -12,7 +12,8 @@ from PyAstronomy import pyasl
 import os
 import math
 import sympy as sym
-import variablesPIM as variaveis
+import variablesPIM
+import validationPIM
 from typing import Tuple
 
 
@@ -364,7 +365,7 @@ def point(sta,sol,m100):
     vF1G[2] = np.rad2deg(vF1G[2])
     return vF1G
     
-def meteorDataG(alt1, lon1, lat1, alt2, lon2, lat2, az1A, h1A, az2A, h2A, az1B, h1B, az2B, h2B):  #lista com o que cada camera viu em coordenadas geograficas
+def meteorDataG(alt1, lon1, lat1, alt2, lon2, lat2, az1A, h1A, az2A, h2A, az1B, h1B, az2B, h2B):
     sta1 = np.array([alt1,np.radians(lon1),np.radians(lat1)])
     sta2 = np.array([alt2,np.radians(lon2),np.radians(lat2)])
     m1A100 = np.array([100.,np.radians(az1A),np.radians(h1A)])
@@ -479,6 +480,17 @@ def meteorPoints (leitura,dataMeteoro):
                                 az1Ini, h1Ini, az2Ini, h2Ini, az1Fin, h1Fin, az2Fin, h2Fin))
     return pontosMeteoro
 
+def massPoint (leitura):
+    massaPont = []
+    if leitura['massaPont'][0].find(',') == -1:
+        massaPont.append(float(leitura['massaPont'][0]))
+
+    else:
+        massaPontString= leitura['massaPont'][0].split(sep=',')
+        for i in massaPontString:
+            massaPont.append(float(i))
+    return massaPont
+
 def PIMRun(arquivoMeteoroEntrada):
 
 
@@ -503,7 +515,7 @@ def PIMRun(arquivoMeteoroEntrada):
     else:
         P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT, Vx4, Vy4, Vz4 = pointsIntervalsCase0(leitura)
 
-###############################################################################################
+    ###############################################################################################
 
     # Instante meteoro (ano,mes,dia,hora,minuto,segundo)
 
@@ -513,17 +525,9 @@ def PIMRun(arquivoMeteoroEntrada):
 
     # Massas para o pontos de queda kg      MassaPont = [0.001,0.01,0.1,1,10,50,100,150]
 
-    massaPont = []
-    if leitura['massaPont'][0].find(',') == -1:
-        massaPont.append(float(leitura['massaPont'][0]))
-
-    else:
-        massaPontString= leitura['massaPont'][0].split(sep=',')
-        for i in massaPontString:
-            massaPont.append(float(i))
+    massaPont = massPoint (leitura)
 
     ###############################################################################################
-
 
     CD=leitura['CD'][0]
 
@@ -548,21 +552,14 @@ def PIMRun(arquivoMeteoroEntrada):
     ###############################################################################################
     # Criação do Diretório
 
-    dirM = os.path.join(variaveis.directory, meteorN)
-    print(dirM)
-
-    try:
-        os.mkdir(dirM)
-    except OSError:
-        print ("Creation of the directory %s failed" % meteorN)
-    else:
-        print ("Successfully created the directory %s " % meteorN)
+    meteorN = meteorN + " - Analyses"
+    validationPIM.createDirIfDoesntExist(variablesPIM.directorystr, meteorN)
 
     ###############################################################################################
 
     # Gravar informações gerais
 
-    gravarEntrada = open((dirM+'/dados.txt'),'w')
+    gravarEntrada = open((variablesPIM.directorystr+'/dados.txt'),'w')
     gravarEntrada.write(("Meteor: "+meteorN+'\n \n'))
     linha='P1: lat: '+str(P1lat)+'  lon: '+str(P1lon)+'  alt: '+str(P1alt) +'\n'
     gravarEntrada.write(linha)
@@ -592,10 +589,10 @@ def PIMRun(arquivoMeteoroEntrada):
         strPontosCam +=str(distMet(np.array([P1alt, P1lon, P1lat]),np.array([P2alt, P2lon, P2lat]))) + '\n'
         strPontosCam +='velocidade do meteoro (km/s)\n'
         strPontosCam +=str(velMet(np.array([P1alt, P1lon, P1lat]),np.array([P2alt, P2lon, P2lat]),leitura['deltaT'][0]))+'\n --- \n'
-        with open(dirM+ '/'+'dados.txt',"a") as filesCam:
+        with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
         if (velMet(np.array([P1alt, P1lon, P1lat]),np.array([P2alt, P2lon, P2lat]),leitura['deltaT'][0]) < 11.):
-            with open(dirM+ '/'+'dados.txt',"a") as filesCam:
+            with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
                 filesCam.write("slow velocity")
 
 
@@ -606,7 +603,7 @@ def PIMRun(arquivoMeteoroEntrada):
         strPontosCam = str(pontosMeteoro) + '\n'
         strPontosCam += '--------------\n'
         strPontosCam +='distancia entre as estações \n'
-        strPontosCam +=str(distMet(np.array([alt1, lon1, lat1]),np.array([alt2, lon2, lat2]))) + '\n'
+        strPontosCam +=str(distMet(np.array([pontosMeteoro[0], pontosMeteoro[1], pontosMeteoro[2]]),np.array([pontosMeteoro[3], pontosMeteoro[4], pontosMeteoro[5]]))) + '\n'
         strPontosCam +='--------------\n'
         strPontosCam +='comprimento meteoro cam1 (km)\n'
         strPontosCam +=str(distMet(pontosMeteoro['v1Acam'],pontosMeteoro['v1Bcam'])) + '\n'
@@ -621,17 +618,17 @@ def PIMRun(arquivoMeteoroEntrada):
         strPontosCam +=str(distMet(pontosMeteoro['v2Acam'],pontosMeteoro['v1Acam']))+'\n'
         strPontosCam +="distância final do meteoro entre as cameras (km)\n"
         strPontosCam +=str(distMet(pontosMeteoro['v2Bcam'],pontosMeteoro['v1Bcam']))+'\n ----- \n'
-        with open(dirM+ '/'+'dados.txt',"a") as filesCam:
+        with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
             filesCam.write("\n using cam = " + str(leitura['cam'][0])+ '\n')
         if (leitura['cam'][0] == 1):
             if (velMet(pontosMeteoro['v1Acam'],pontosMeteoro['v1Bcam'],leitura['deltaT1'][0]) < 11.):
-                with open(dirM+ '/'+'dados.txt',"a") as filesCam:
+                with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
                     filesCam.write("slow velocity")
             return
         elif (leitura['cam'][0] == 2):
             if (velMet(pontosMeteoro['v2Acam'],pontosMeteoro['v2Bcam'],leitura['deltaT2'][0]) < 11.):
-                with open(dirM+ '/'+'dados.txt',"a") as filesCam:
+                with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
                     filesCam.write("slow velocity")
                 return
 
@@ -640,10 +637,10 @@ def PIMRun(arquivoMeteoroEntrada):
 
         strPontosCam ='velocidade do meteoro (km/s)\n'
         strPontosCam +=str(sqrt(Vx4**2+Vy4**2+Vz4**2)/1000.)
-        with open(dirM+ '/'+'dados.txt',"a") as filesCam:
+        with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
         if ((sqrt(Vx4**2+Vy4**2+Vz4**2)/1000.)<11.):
-            with open(dirM+ '/'+'dados.txt',"a") as filesCam:
+            with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
                 filesCam.write("slow velocity")
             # return
 
@@ -723,8 +720,8 @@ def PIMRun(arquivoMeteoroEntrada):
         Vx[i],Vy[i],Vz[i]=Vx1[i],Vy1[i],Vz1[i]
         latM[i],lonM[i],altM[i] = transprojCart.transform(X[i],Y[i],Z[i])
 
-    arquivo=open((dirM+'/saida.out'),'w')
-    arquivoQueda=open((dirM+'/queda.dat'),'w')
+    arquivo=open((variablesPIM.directorystr+'/saida.out'),'w')
+    arquivoQueda=open((variablesPIM.directorystr+'/queda.dat'),'w')
     arquivoQueda.write("time(s) vel alt(km) lon lat \n")
 
     for j in range (len(massaPont)):
@@ -813,8 +810,8 @@ def PIMRun(arquivoMeteoroEntrada):
         Vx[i],Vy[i],Vz[i]=Vx1[i],Vy1[i],Vz1[i]
         latM[i],lonM[i],altM[i] = transprojCart.transform(X[i],Y[i],Z[i])
 
-    arquivoCart=open((dirM+'/Cartesian.dat'),'w')
-    arquivoCoord=open((dirM+'/Coordinate.dat'),'w')
+    arquivoCart=open((variablesPIM.directorystr+'/Cartesian.dat'),'w')
+    arquivoCoord=open((variablesPIM.directorystr+'/Coordinate.dat'),'w')
 
     arquivoCart.write("time(s) x y z vx vy vz \n")
     arquivoCoord.write("time(s) vel alt(km) lon lat \n")
@@ -862,7 +859,7 @@ def PIMRun(arquivoMeteoroEntrada):
         X[j],Y[j],Z[j],Vx[j],Vy[j],Vz[j] =ps[1].x,ps[1].y,ps[1].z,ps[1].vx,ps[1].vy,ps[1].vz
         latM[j],lonM[j],altM[j] = transprojCart.transform(ps[1].x,ps[1].y,ps[1].z)
     #        print(tempo,latM[j],lonM[j],altM[j]/1000)
-    with open((dirM+'/FinalCartesian.dat'),'w') as f:
+    with open((variablesPIM.directorystr+'/FinalCartesian.dat'),'w') as f:
         f.write(strCart)
 
 
@@ -871,14 +868,14 @@ def PIMRun(arquivoMeteoroEntrada):
     ############################################################################################################
     # fazer arquivo com a trajetoria total do meteoro
     ##
-    #  for line in reversed(list(open(dirM+'/coordinates.txt'))):
+    #  for line in reversed(list(open(variablesPIM.directorystr+'/coordinates.txt'))):
     #    print(line.rstrip())
         
     ################################################################################################################
     #salvar os dados dos pontos de queda do meteorito e vai gerar ao mapa de queda (primeira integraçao para frente)
     #   Análise dos pontos de queda e da integração reversa até 1000 km
     # (usa os arquivos .out salvo nos procedimentos anteriores)
-    saida = pd.read_csv((dirM+'/saida.out'), sep='\s+',header=None)
+    saida = pd.read_csv((variablesPIM.directorystr+'/saida.out'), sep='\s+',header=None)
     excluir = [0,2,4,6,7,8]
     saida.drop(saida.columns[excluir],axis=1,inplace=True)
 
@@ -889,14 +886,14 @@ def PIMRun(arquivoMeteoroEntrada):
     colunas = ['mass','time(s)','lon','lat']
     saida.columns = colunas
     #display(saida)
-    arquivo=open((dirM+'/dados.txt'),'a')
+    arquivo=open((variablesPIM.directorystr+'/dados.txt'),'a')
     arquivo.write(('\n \n Strewn Field: \n'))
     arquivo.write(saida.to_string(index=False))
     arquivo.write('\n \n')
     arquivo.close()
 
     # referente a integraçao pra tras (qunto tempo ele estava da entrada da atmosfera até chegar oa ponto do meteoro/ instante q ele entrou na atmosfera)
-    with open(dirM+'/FinalCartesian.dat','r') as f:
+    with open(variablesPIM.directorystr+'/FinalCartesian.dat','r') as f:
         ent=f.read()
     fimTempoVoo=ent.index(" ")
     tempoVoo=float(ent[0:fimTempoVoo])
@@ -931,5 +928,5 @@ def PIMRun(arquivoMeteoroEntrada):
             popup=folium.Popup(row['mass'],show=True),
             icon=folium.map.Icon(color='yellow')
         ).add_to(map_osm)
-    map_osm.save(dirM+'/strewnField.html')
+    map_osm.save(variablesPIM.directorystr+'/strewnField.html')
     return
