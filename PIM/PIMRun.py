@@ -491,6 +491,26 @@ def massPoint (leitura):
             massaPont.append(float(i))
     return massaPont
 
+def writeData (leitura, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,deltaT,horaMeteoro ):
+    gravarEntrada = open((variablesPIM.directorystr+'/dados.txt'),'w')
+    gravarEntrada.write(("Meteor: "+meteorN+'\n \n'))
+    linha='P1: lat: '+str(P1lat)+'  lon: '+str(P1lon)+'  alt: '+str(P1alt) +'\n'
+    gravarEntrada.write(linha)
+
+    if leitura['opcao'][0] != 4:
+        linha='P2: lat: '+ str(P2lat)+'  lon: '+ str(P2lon)+'  alt: '+str(P2alt) +'\n'
+        gravarEntrada.write(linha)
+
+    else:
+        linha='Vx (km/s): '+str(Vx4/1000)+'   Vy (km/s): '+str(Vy4/1000)+'  Vz (km/s): '+str(Vz4/1000) +'\n'
+        gravarEntrada.write(linha)
+
+    linha='time: '+str(deltaT)+' \n'
+    gravarEntrada.write(linha)
+    linha='date: '+horaMeteoro.strftime("%Y-%m-%d %H:%M:%S")+'\n'
+    gravarEntrada.write(linha)
+    gravarEntrada.close()
+
 def PIMRun(arquivoMeteoroEntrada):
 
 
@@ -559,24 +579,7 @@ def PIMRun(arquivoMeteoroEntrada):
 
     # Gravar informações gerais
 
-    gravarEntrada = open((variablesPIM.directorystr+'/dados.txt'),'w')
-    gravarEntrada.write(("Meteor: "+meteorN+'\n \n'))
-    linha='P1: lat: '+str(P1lat)+'  lon: '+str(P1lon)+'  alt: '+str(P1alt) +'\n'
-    gravarEntrada.write(linha)
-
-    if leitura['opcao'][0] != 4:
-        linha='P2: lat: '+ str(P2lat)+'  lon: '+ str(P2lon)+'  alt: '+str(P2alt) +'\n'
-        gravarEntrada.write(linha)
-
-    else:
-        linha='Vx (km/s): '+str(Vx4/1000)+'   Vy (km/s): '+str(Vy4/1000)+'  Vz (km/s): '+str(Vz4/1000) +'\n'
-        gravarEntrada.write(linha)
-
-    linha='time: '+str(deltaT)+' \n'
-    gravarEntrada.write(linha)
-    linha='date: '+horaMeteoro.strftime("%Y-%m-%d %H:%M:%S")+'\n'
-    gravarEntrada.write(linha)
-    gravarEntrada.close()
+    writeData (leitura, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,deltaT,horaMeteoro)
 
 
     ###############################################################################################
