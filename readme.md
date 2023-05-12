@@ -1,4 +1,16 @@
-## Instalar Bibliotecas Necessárias
+## Sumário
+
+### 1. Instalar Bibliotecas Necessárias
+### 2. Utilizar o Git
+#### 2.1 Linkar Repositório Local com Repositório Remoto
+#### 2.2 Baixar Repositório Remoto para sua Máquina
+#### 2.3 Baixar Atualizações do Git
+#### 2.4 Incluir Arquivos na Lista de Modificados
+#### 2.5 Commit (Incluir uma Nova Versão)
+#### 2.6 Atualizar Repositório Remoto
+
+
+## 1. Instalar Bibliotecas Necessárias
 
 Para instalar as bibliotecas necessárias, utilize o seguinte comando:
 
@@ -6,9 +18,9 @@ Para instalar as bibliotecas necessárias, utilize o seguinte comando:
 pip install -r requirements.txt
 ```
 
-## Utilizar o Git
+## 2. Utilizar o Git
 
-### Linkar Repositório Local com Repositório Remoto
+### 2.1 Linkar Repositório Local com Repositório Remoto
 
 Para linkar o repositório local com o repositório remoto, utilize o seguinte comando:
 
@@ -16,8 +28,7 @@ Para linkar o repositório local com o repositório remoto, utilize o seguinte c
 git remote add origin {link do github}
 ```
 
-
-### Baixar Repositório Remoto para sua Máquina
+### 2.2 Baixar Repositório Remoto para sua Máquina
 
 Para baixar o repositório remoto para sua máquina, utilize o seguinte comando:
 
@@ -25,8 +36,7 @@ Para baixar o repositório remoto para sua máquina, utilize o seguinte comando:
 git clone {link}
 ```
 
-
-### Baixar Atualizações do Git
+### 2.3 Baixar Atualizações do Git
 
 Para baixar as atualizações do Git antes de começar a fazer alterações, utilize o seguinte comando:
 
@@ -34,8 +44,7 @@ Para baixar as atualizações do Git antes de começar a fazer alterações, uti
 git pull origin {nome da branch}
 ```
 
-
-### Incluir Arquivos na Lista de Modificados
+### 2.4 Incluir Arquivos na Lista de Modificados
 
 Para incluir arquivos na lista de modificados, utilize o seguinte comando:
 
@@ -43,9 +52,7 @@ Para incluir arquivos na lista de modificados, utilize o seguinte comando:
 git add {nome do arquivo/pasta ou .}
 ```
 
-
-
-### Commit (Incluir uma Nova Versão)
+### 2.5 Commit (Incluir uma Nova Versão)
 
 Para incluir uma nova versão, utilize o seguinte comando:
 
@@ -53,8 +60,7 @@ Para incluir uma nova versão, utilize o seguinte comando:
 git commit -m "{mensagem}"
 ```
 
-
-### Atualizar Repositório Remoto
+### 2.6 Atualizar Repositório Remoto
 
 1. Para atualizar o repositório remoto, utilize o seguinte comando:
 
