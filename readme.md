@@ -1,15 +1,3 @@
-## Sumário
-
-### 1. Instalar Bibliotecas Necessárias
-### 2. Utilizar o Git
-#### 2.1 Linkar Repositório Local com Repositório Remoto
-#### 2.2 Baixar Repositório Remoto para sua Máquina
-#### 2.3 Baixar Atualizações do Git
-#### 2.4 Incluir Arquivos na Lista de Modificados
-#### 2.5 Commit (Incluir uma Nova Versão)
-#### 2.6 Atualizar Repositório Remoto
-
-
 ## 1. Instalar Bibliotecas Necessárias
 
 Para instalar as bibliotecas necessárias, utilize o seguinte comando:
@@ -87,4 +75,9 @@ git push origin {nome da branch}
 5. Atualizar repositorio remoto:
 ```bash
     git push origin {nome da branch}
+```
+
+# 3. Acessar o Ambiente
+```bash
+    source AmbientePIM-env/bin/activate
 ```
