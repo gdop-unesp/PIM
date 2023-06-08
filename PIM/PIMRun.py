@@ -402,7 +402,7 @@ def readInputFile (file_path):
         - arquivoMeteoroEntrada = 'input_file.csv'
 
     """
-    full_path = variaveis.directorystr + file_path
+    full_path = variablesPIM.directorystr + file_path
     df = pd.read_csv(full_path, sep='=', comment='#', index_col=0).transpose()
     df = df.apply(pd.to_numeric, errors='ignore')
     date_time = [df['ano'][0], df['mes'][0], df['dia'][0], df['hora'][0], df['minuto'][0], df['segundo'][0]]
@@ -535,39 +535,19 @@ def PIMRun(arquivoMeteoroEntrada):
     else:
         P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT, Vx4, Vy4, Vz4 = pointsIntervalsCase0(leitura)
 
-    ###############################################################################################
+#################################################################################################
 
-    # Instante meteoro (ano,mes,dia,hora,minuto,segundo)
-
-    horaMeteoro=datetime(dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],dataMeteoro[3],dataMeteoro[4],dataMeteoro[5])
-
-    ###############################################################################################
-
-    # Massas para o pontos de queda kg      MassaPont = [0.001,0.01,0.1,1,10,50,100,150]
-
-    massaPont = massPoint (leitura)
-
-    ###############################################################################################
-
+    
+    horaMeteoro=datetime(dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],\         
+                         dataMeteoro[3],dataMeteoro[4],dataMeteoro[5])      # Instante meteoro (ano,mes,dia,hora,minuto,segundo)
+    
+    massaPont = massPoint (leitura)             # Massas para o pontos de queda kg  [0.001,0.01,0.1,1,10,50,100,150]
     CD=leitura['CD'][0]
-
-    ###############################################################################################
-
-    # Densidade
-    densMeteor = leitura['densMeteor'][0]
-
-    ###############################################################################################
-
-    # Integracão: massa do meteoro, tempo de integração (dias), passo de integração
-
-    massaInt = leitura['massaInt'][0]
-    tInt = leitura['tInt'][0]
-    tIntStep = leitura['tIntStep'][0]
-
-    ###############################################################################################
-
-    # Tamanho da esfera de Hill para close enconter
-    tamHill=leitura['tamHill'][0]
+    densMeteor = leitura['densMeteor'][0]       # Densidade
+    massaInt = leitura['massaInt'][0]           # Massa do meteoro
+    tInt = leitura['tInt'][0]                   # Tempo de integração (dias)
+    tIntStep = leitura['tIntStep'][0]           # Passo de integração
+    tamHill=leitura['tamHill'][0]               # Tamanho da esfera de Hill para close enconter
 
     ###############################################################################################
     # Criação do Diretório
