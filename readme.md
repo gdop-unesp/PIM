@@ -1,83 +1,36 @@
-## 1. Instalar Bibliotecas Necessárias
+# Preparação do Ambiente
 
-Para instalar as bibliotecas necessárias, utilize o seguinte comando:
+Para executar o programa, é necessário garantir que todas as bibliotecas do ambiente virtual estejam atualizadas. Caso o ambiente virtual não tenha sido criado, basta executar o comando abaixo.
 
 ```bash
-pip install -r requirements.txt
+python -m venv venv
+```
+Uma vez que o ambiente foi criado, as bibliotecas podem ser carregadas utilizando os comandos abaixo.
+
+```bash
+source venv/bin/activate  # Inicia o ambiente virtual
+
+pip install -r requirements.txt  # Carrega as bibliotecas
 ```
 
-## 2. Utilizar o Git
+# Versionamento do Código (Git)
 
-### 2.1 Linkar Repositório Local com Repositório Remoto
+Para o versionamento do código, foi utilizado o software [Git](https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F). As principais funções oferecidas por ele são de:
 
-Para linkar o repositório local com o repositório remoto, utilize o seguinte comando:
-
+1. Baixar as atualizações mais recentes do repositório remoto
 ```bash
-git remote add origin {link do github}
+git pull origin main
+```
+2. Criar uma nova versão local
+```bash
+# Inclui arquivo ou diretório para nova versão
+git add <nome_do_arquivo/pasta>
+
+# Cria nova versão com arquivos incluidos anteriormente
+git commit -m "Comentário da nova versão"
 ```
 
-### 2.2 Baixar Repositório Remoto para sua Máquina
-
-Para baixar o repositório remoto para sua máquina, utilize o seguinte comando:
-
+3. Subir as versões locais para o repositório remoto
 ```bash
-git clone {link}
-```
-
-### 2.3 Baixar Atualizações do Git
-
-Para baixar as atualizações do Git antes de começar a fazer alterações, utilize o seguinte comando:
-
-```bash
-git pull origin {nome da branch}
-```
-
-### 2.4 Incluir Arquivos na Lista de Modificados
-
-Para incluir arquivos na lista de modificados, utilize o seguinte comando:
-
-```bash
-git add {nome do arquivo/pasta ou .}
-```
-
-### 2.5 Commit (Incluir uma Nova Versão)
-
-Para incluir uma nova versão, utilize o seguinte comando:
-
-```bash
-git commit -m "{mensagem}"
-```
-
-### 2.6 Atualizar Repositório Remoto
-
-1. Para atualizar o repositório remoto, utilize o seguinte comando:
-
-```bash
-git push origin {nome da branch}
-```
-    
-2. Baixar as atualizações do git (primeira coisa a se fazer no dia antes de começar as alterações):
-
-```bash
-    git pull origin {nome da branch}
-```
-
-3. Incluir arquivos na lista de modificados:
-```bash
-    git add {nome do arquivo/pasta ou .} 
-```
-
-4. Commit (Incluir uma nova versão):
-```bash
-    git commit -m "{mensagem}"
-```
-
-5. Atualizar repositorio remoto:
-```bash
-    git push origin {nome da branch}
-```
-
-# 3. Acessar o Ambiente
-```bash
-    source AmbientePIM-env/bin/activate
+git push origin main
 ```
