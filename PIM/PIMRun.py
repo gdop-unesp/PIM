@@ -305,147 +305,147 @@ def readInputFile (file_path):
 
     return full_path, df, date_time, meteor_name 
 
-def pointsIntervalsCase1(leitura):
+def pointsIntervalsCase1(readout):
     '''
     Calculate points and intervals for Case 1.
 
     Args:
-        leitura (pd.DataFrame): A pandas DataFrame with meteor parameters.
+        readout (pd.DataFrame): A pandas DataFrame with meteor parameters.
 
     Returns:
         tuple: A tuple containing latitude, longitude, altitude, deltaT for the two points.
     '''
-    P1lat = leitura['P1lat'][0]
-    P1lon = leitura['P1lon'][0]
-    P1alt =  leitura['P1alt'][0]
-    P2lat =  leitura['P2lat'][0]
-    P2lon = leitura['P2lon'][0]
-    P2alt = leitura['P2alt'][0]
-    deltaT = leitura['deltaT'][0]
+    P1lat = readout['P1lat'][0]
+    P1lon = readout['P1lon'][0]
+    P1alt =  readout['P1alt'][0]
+    P2lat =  readout['P2lat'][0]
+    P2lon = readout['P2lon'][0]
+    P2alt = readout['P2alt'][0]
+    deltaT = readout['deltaT'][0]
 
     return P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT
 
-def pointsIntervalsCase2(leitura,pontosMeteoro):
+def pointsIntervalsCase2(readout,meteorPoints):
     '''
     Calculate points and intervals for Case 2.
 
     Args:
-        leitura (pd.DataFrame): A pandas DataFrame with meteor parameters.
-        pontosMeteoro (dict): A dictionary containing meteor points.
+        readout (pd.DataFrame): A pandas DataFrame with meteor parameters.
+        meteorPoints (dict): A dictionary containing meteor points.
 
     Returns:
         tuple: A tuple containing latitude, longitude, altitude, deltaT for the two points.
     '''
-    if leitura['cam'][0] == 1:
+    if readout['cam'][0] == 1:
 
-        P1alt,P1lon,P1lat = pontosMeteoro['v1Acam'][0],pontosMeteoro['v1Acam'][1],pontosMeteoro['v1Acam'][2]
-        P2alt,P2lon,P2lat = pontosMeteoro['v1Bcam'][0],pontosMeteoro['v1Bcam'][1],pontosMeteoro['v1Bcam']  [2]
-        deltaT = leitura['deltaT1'][0]
+        P1alt,P1lon,P1lat = meteorPoints['v1Acam'][0],meteorPoints['v1Acam'][1],meteorPoints['v1Acam'][2]
+        P2alt,P2lon,P2lat = meteorPoints['v1Bcam'][0],meteorPoints['v1Bcam'][1],meteorPoints['v1Bcam']  [2]
+        deltaT = readout['deltaT1'][0]
 
     else:
 
-        P1alt,P1lon,P1lat = pontosMeteoro['v2Acam'][0],pontosMeteoro['v2Acam'][1],pontosMeteoro['v2Acam'][2]
-        P2alt,P2lon,P2lat = pontosMeteoro['v2Bcam'][0],pontosMeteoro['v2Bcam'][1],pontosMeteoro['v2Bcam'][2]
-        deltaT = leitura['deltaT2'][0]
+        P1alt,P1lon,P1lat = meteorPoints['v2Acam'][0],meteorPoints['v2Acam'][1],meteorPoints['v2Acam'][2]
+        P2alt,P2lon,P2lat = meteorPoints['v2Bcam'][0],meteorPoints['v2Bcam'][1],meteorPoints['v2Bcam'][2]
+        deltaT = readout['deltaT2'][0]
 
     return P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT
 
-def pointsIntervalsCase3(leitura, dataMeteoro,pontosMeteoro):
+def pointsIntervalsCase3(readout, dataMeteoro,meteorPoints):
     '''
     Calculate points and intervals for Case 3.
 
     Args:
-        leitura (pd.DataFrame): A pandas DataFrame with meteor parameters.
+        readout (pd.DataFrame): A pandas DataFrame with meteor parameters.
         dataMeteoro (list): A list with meteor date and time [year, month, day, hour, minute, second].
-        pontosMeteoro (dict): A dictionary containing meteor points.
+        meteorPoints (dict): A dictionary containing meteor points.
 
     Returns:
         tuple: A tuple containing latitude, longitude, altitude, deltaT for the two points.
     '''
-    if leitura['cam'][0] == 1:
+    if readout['cam'][0] == 1:
 
-        P1alt,P1lon,P1lat = pontosMeteoro['v1Acam'][0],pontosMeteoro['v1Acam'][1],pontosMeteoro['v1Acam'][2]
-        P2alt,P2lon,P2lat = pontosMeteoro['v1Bcam'][0],pontosMeteoro['v1Bcam'][1],pontosMeteoro['v1Bcam']  [2]
-        deltaT = leitura['deltaT1'][0]
+        P1alt,P1lon,P1lat = meteorPoints['v1Acam'][0],meteorPoints['v1Acam'][1],meteorPoints['v1Acam'][2]
+        P2alt,P2lon,P2lat = meteorPoints['v1Bcam'][0],meteorPoints['v1Bcam'][1],meteorPoints['v1Bcam']  [2]
+        deltaT = readout['deltaT1'][0]
 
 
     else:
 
-        P1alt,P1lon,P1lat = pontosMeteoro['v2Acam'][0],pontosMeteoro['v2Acam'][1],pontosMeteoro['v2Acam'][2]
-        P2alt,P2lon,P2lat = pontosMeteoro['v2Bcam'][0],pontosMeteoro['v2Bcam'][1],pontosMeteoro['v2Bcam'][2]
-        deltaT = leitura['deltaT2'][0]
+        P1alt,P1lon,P1lat = meteorPoints['v2Acam'][0],meteorPoints['v2Acam'][1],meteorPoints['v2Acam'][2]
+        P2alt,P2lon,P2lat = meteorPoints['v2Bcam'][0],meteorPoints['v2Bcam'][1],meteorPoints['v2Bcam'][2]
+        deltaT = readout['deltaT2'][0]
 
     return P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT
 
-def pointsIntervalsCase0(leitura):
+def pointsIntervalsCase0(readout):
     '''
     Calculate points and intervals for Case 0.
 
     Args:
-        leitura (pd.DataFrame): A pandas DataFrame with meteor parameters.
+        readout (pd.DataFrame): A pandas DataFrame with meteor parameters.
 
     Returns:
         tuple: A tuple containing latitude, longitude, altitude, deltaT, Vx, Vy, Vz for the two points.
     '''
-    P1alt,P1lon,P1lat = leitura['alt4d'][0],leitura['lon4d'][0],leitura['lat4d'][0]
+    P1alt,P1lon,P1lat = readout['alt4d'][0],readout['lon4d'][0],readout['lat4d'][0]
     P2alt,P2lon,P2lat = P1alt,P1lon,P1lat
-    Vx4,Vy4,Vz4= leitura['Vx4d'][0]*1000.,leitura['Vy4d'][0]*1000.,leitura['Vz4d'][0]*1000.
+    Vx4,Vy4,Vz4= readout['Vx4d'][0]*1000.,readout['Vy4d'][0]*1000.,readout['Vz4d'][0]*1000.
     deltaT=0
     return P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT, Vx4, Vy4, Vz4
     
-def meteorPoints (leitura,dataMeteoro):
+def meteorPoints (readout,dataMeteoro):
     '''
     Calculate meteor points based on input parameters.
 
     Args:
-        leitura (pd.DataFrame): A pandas DataFrame with meteor parameters.
+        readout (pd.DataFrame): A pandas DataFrame with meteor parameters.
         dataMeteoro (list): A list with meteor date and time [year, month, day, hour, minute, second].
 
     Returns:
         dict: A dictionary containing meteor points.
     '''
-    alt1,lon1,lat1 = leitura['alt1'][0],leitura['lon1'][0],leitura['lat1'][0]
-    alt2,lon2,lat2 = leitura['alt2'][0],leitura['lon2'][0],leitura['lat2'][0]
-    ra1Ini, dec1Ini =  leitura['ra1Ini'][0],leitura['dec1Ini'][0]
-    ra2Ini, dec2Ini =  leitura['ra2Ini'][0],leitura['dec2Ini'][0]
-    ra1Fin, dec1Fin =  leitura['ra1Fin'][0],leitura['dec1Fin'][0]
-    ra2Fin, dec2Fin =  leitura['ra2Fin'][0],leitura['dec2Fin'][0]
+    alt1,lon1,lat1 = readout['alt1'][0],readout['lon1'][0],readout['lat1'][0]
+    alt2,lon2,lat2 = readout['alt2'][0],readout['lon2'][0],readout['lat2'][0]
+    ra1Ini, dec1Ini =  readout['ra1Ini'][0],readout['dec1Ini'][0]
+    ra2Ini, dec2Ini =  readout['ra2Ini'][0],readout['dec2Ini'][0]
+    ra1Fin, dec1Fin =  readout['ra1Fin'][0],readout['dec1Fin'][0]
+    ra2Fin, dec2Fin =  readout['ra2Fin'][0],readout['dec2Fin'][0]
     y, m, d, ho, mi, se = dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],dataMeteoro[3],dataMeteoro[4],dataMeteoro[5]
     az1Ini, h1Ini = convEqToHor(y, m, d, ho, mi, se, alt1, lon1, lat1, ra1Ini, dec1Ini)
     az2Ini, h2Ini = convEqToHor(y, m, d, ho, mi, se, alt2, lon2, lat2, ra2Ini, dec2Ini)
     az1Fin, h1Fin = convEqToHor(y, m, d, ho, mi, se, alt1, lon1, lat1, ra1Fin, dec1Fin)
     az2Fin, h2Fin = convEqToHor(y, m, d, ho, mi, se, alt2, lon2, lat2, ra2Fin, dec2Fin)
 
-    pontosMeteoro = (meteorDataG(alt1, lon1, lat1, alt2, lon2, lat2, 
+    meteorPoints = (meteorDataG(alt1, lon1, lat1, alt2, lon2, lat2, 
                                 az1Ini, h1Ini, az2Ini, h2Ini, az1Fin, h1Fin, az2Fin, h2Fin))
-    return pontosMeteoro
+    return meteorPoints
 
-def massPoint (leitura):
+def massPoint (readout):
     '''
     Parse and extract mass point information from the input DataFrame.
 
     Args:
-        leitura (pd.DataFrame): A pandas DataFrame with meteor parameters.
+        readout (pd.DataFrame): A pandas DataFrame with meteor parameters.
 
     Returns:
         list: A list of mass points.
     '''
     massaPont = []
-    if leitura['massaPont'][0].find(',') == -1:
-        massaPont.append(float(leitura['massaPont'][0]))
+    if readout['massaPont'][0].find(',') == -1:
+        massaPont.append(float(readout['massaPont'][0]))
 
     else:
-        massaPontString= leitura['massaPont'][0].split(sep=',')
+        massaPontString= readout['massaPont'][0].split(sep=',')
         for i in massaPontString:
             massaPont.append(float(i))
     return massaPont
 
-def writeData (leitura, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,deltaT,horaMeteoro ):
+def writeData (readout, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,deltaT,horaMeteoro ):
     '''
     Write calculated data to an output file.
 
     Args:
-        leitura (pd.DataFrame): A pandas DataFrame with meteor parameters.
+        readout (pd.DataFrame): A pandas DataFrame with meteor parameters.
         meteorN (str): Name of the meteor.
         P1lat (float): Latitude of point 1.
         P1lon (float): Longitude of point 1.
@@ -459,12 +459,12 @@ def writeData (leitura, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,
         deltaT (float): Time interval.
         horaMeteoro (datetime): Meteor date and time.
     '''
-    gravarEntrada = open((variablesPIM.directorystr+'/dados.txt'),'w')
+    gravarEntrada = open((variablesPIM.directorystr+'/data.txt'),'w')
     gravarEntrada.write(("Meteor: "+meteorN+'\n \n'))
     linha='P1: lat: '+str(P1lat)+'  lon: '+str(P1lon)+'  alt: '+str(P1alt) +'\n'
     gravarEntrada.write(linha)
 
-    if leitura['opcao'][0] != 4:
+    if readout['opcao'][0] != 4:
         linha='P2: lat: '+ str(P2lat)+'  lon: '+ str(P2lon)+'  alt: '+str(P2alt) +'\n'
         gravarEntrada.write(linha)
 
@@ -481,132 +481,128 @@ def writeData (leitura, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,
 def PIMRun(arquivoMeteoroEntrada):
 
 
-# Leitura arquivo entrada
+# readout arquivo entrada
 
-    arquivo, leitura, dataMeteoro, meteorN = readInputFile(arquivoMeteoroEntrada)
+    arquivo, readout, dataMeteoro, meteorN = readInputFile(arquivoMeteoroEntrada)
 
 ###############################################################################################
 # Pontos e Intervalo entre os pontos
 
-    pontosMeteoro = meteorPoints (leitura,dataMeteoro)
+    meteorPoints = meteorPoints (readout,dataMeteoro)
 
-    if leitura['opcao'][0] == 1:
-        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT= pointsIntervalsCase1(leitura)
+    if readout['opcao'][0] == 1:
+        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT= pointsIntervalsCase1(readout)
 
-    elif leitura['opcao'][0] == 2:
-        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT = pointsIntervalsCase2(leitura,pontosMeteoro)
+    elif readout['opcao'][0] == 2:
+        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT = pointsIntervalsCase2(readout,meteorPoints)
         
-    elif leitura['opcao'][0] == 3:
-        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT = pointsIntervalsCase3(leitura, dataMeteoro,pontosMeteoro)
+    elif readout['opcao'][0] == 3:
+        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT = pointsIntervalsCase3(readout, dataMeteoro,meteorPoints)
 
     else:
-        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT, Vx4, Vy4, Vz4 = pointsIntervalsCase0(leitura)
+        P1lat, P1lon, P1alt, P2lat, P2lon, P2alt, deltaT, Vx4, Vy4, Vz4 = pointsIntervalsCase0(readout)
 
 #################################################################################################
 
     
     horaMeteoro=datetime(dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],\         
-                         dataMeteoro[3],dataMeteoro[4],dataMeteoro[5])      # Instante meteoro (ano,mes,dia,hora,minuto,segundo)
+                         dataMeteoro[3],dataMeteoro[4],dataMeteoro[5])      # Meteor Timestamp (year, month, day, hour, minute, second)
     
-    massaPont = massPoint (leitura)             # Massas para o pontos de queda kg  [0.001,0.01,0.1,1,10,50,100,150]
-    CD=leitura['CD'][0]
-    densMeteor = leitura['densMeteor'][0]       # Densidade
-    massaInt = leitura['massaInt'][0]           # Massa do meteoro
-    tInt = leitura['tInt'][0]                   # Tempo de integração (dias)
-    tIntStep = leitura['tIntStep'][0]           # Passo de integração
-    tamHill=leitura['tamHill'][0]               # Tamanho da esfera de Hill para close enconter
+    massaPont = massPoint (readout)             # Masses for impact points kg [0.001, 0.01, 0.1, 1, 10, 50, 100, 150]
+    CD=readout['CD'][0]
+    densMeteor = readout['densMeteor'][0]       # Density
+    massaInt = readout['massaInt'][0]           # Meteor mass
+    tInt = readout['tInt'][0]                   # Integration time (days)
+    tIntStep = readout['tIntStep'][0]           # Integration step
+    tamHill=readout['tamHill'][0]               # Hill sphere size for close encounter
 
     ###############################################################################################
-    # Criação do Diretório
+    # Directory Creation
 
     meteorN = meteorN + " - Analyses"
     validationPIM.createDirIfDoesntExist(variablesPIM.directorystr, meteorN)
 
     ###############################################################################################
 
-    # Gravar informações gerais
-
-    writeData (leitura, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,deltaT,horaMeteoro)
-
+    # Record general information
+    
+    writeData (readout, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,deltaT,horaMeteoro)
 
     ###############################################################################################
 
-    # Unir dados
+    # Consolidating Data    
+    
+    P1 = np.array([P1alt, P1lon, P1lat])
+    P2 = np.array([P2alt, P2lon, P2lat])
+    deltaT = readout['deltaT'][0]
+    distance = distMet(P1,P2)
+    velocity = velMet(P1,P2,deltaT)
+    distStations = distMet(np.array([meteorPoints[0], meteorPoints[1], meteorPoints[2]]),np.array([meteorPoints[3], meteorPoints[4], meteorPoints[5]]))
+    legthCam1 = distMet(meteorPoints['v1Acam'],meteorPoints['v1Bcam'])
+    legthCam2 = distMet(meteorPoints['v2Acam'],meteorPoints['v2Bcam'])
+    speedCam1 = velMet(meteorPoints['v1Acam'],meteorPoints['v1Bcam'],readout['deltaT1'][0])
+    speedCam2 = velMet(meteorPoints['v2Acam'],meteorPoints['v2Bcam'],readout['deltaT2'][0])
+    initialDistance = distMet(meteorPoints['v2Acam'],meteorPoints['v1Acam'])
+    finalDistance = distMet(meteorPoints['v2Bcam'],meteorPoints['v1Bcam'])
+    velocityOp4 = str(sqrt(Vx4**2+Vy4**2+Vz4**2)/1000.)
 
-    if leitura['opcao'][0] == 1:
-
-        strPontosCam ='comprimento meteoro (km)\n'
-        strPontosCam +=str(distMet(np.array([P1alt, P1lon, P1lat]),np.array([P2alt, P2lon, P2lat]))) + '\n'
-        strPontosCam +='velocidade do meteoro (km/s)\n'
-        strPontosCam +=str(velMet(np.array([P1alt, P1lon, P1lat]),np.array([P2alt, P2lon, P2lat]),leitura['deltaT'][0]))+'\n --- \n'
-        with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
+    if readout['opcao'][0] == 1:
+        strPontosCam = f'Meteor Length (km):\n{distance}\n'
+        strPontosCam += f'Meteor Speed (km/s):\n{velocity}\n --- \n'
+        with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
-        if (velMet(np.array([P1alt, P1lon, P1lat]),np.array([P2alt, P2lon, P2lat]),leitura['deltaT'][0]) < 11.):
-            with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
-                filesCam.write("slow velocity")
+        if ( velocity < 11.):
+            with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
+                filesCam.write("Slow velocity")
 
 
-
-
-    if leitura['opcao'][0] == 2 or leitura['opcao'][0] == 3:
+    if readout['opcao'][0] == 2 or readout['opcao'][0] == 3:
         
-        strPontosCam = str(pontosMeteoro) + '\n'
-        strPontosCam += '--------------\n'
-        strPontosCam +='distancia entre as estações \n'
-        strPontosCam +=str(distMet(np.array([pontosMeteoro[0], pontosMeteoro[1], pontosMeteoro[2]]),np.array([pontosMeteoro[3], pontosMeteoro[4], pontosMeteoro[5]]))) + '\n'
-        strPontosCam +='--------------\n'
-        strPontosCam +='comprimento meteoro cam1 (km)\n'
-        strPontosCam +=str(distMet(pontosMeteoro['v1Acam'],pontosMeteoro['v1Bcam'])) + '\n'
-        strPontosCam +='comprimento meteoro cam2 (km)\n'
-        strPontosCam +=str(distMet(pontosMeteoro['v2Acam'],pontosMeteoro['v2Bcam']))+'\n'
-        strPontosCam +='velocidade meteoro cam1 (km/s)\n'
-        strPontosCam +=str(velMet(pontosMeteoro['v1Acam'],pontosMeteoro['v1Bcam'],leitura['deltaT1'][0]))+'\n'
-        strPontosCam +='velocidade meteoro cam2 (km/s)\n'
-        strPontosCam +=str(velMet(pontosMeteoro['v2Acam'],pontosMeteoro['v2Bcam'],leitura['deltaT2'][0]))+'\n'
-        strPontosCam +="-----distPontos A B entre cameras-------\n"
-        strPontosCam +="distância inicial do meteoro entre as cameras (km)\n"
-        strPontosCam +=str(distMet(pontosMeteoro['v2Acam'],pontosMeteoro['v1Acam']))+'\n'
-        strPontosCam +="distância final do meteoro entre as cameras (km)\n"
-        strPontosCam +=str(distMet(pontosMeteoro['v2Bcam'],pontosMeteoro['v1Bcam']))+'\n ----- \n'
-        with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
+        strPontosCam =  str(meteorPoints) + '\n' + '--------------\n'
+        strPontosCam += f'Distance between stations: \n{distStations}\n--------------\n'
+        strPontosCam += f'Meteor cam1 Length (km):  \n{legthCam1}\n--------------\n'
+        strPontosCam += f'Meteor cam2 Length (km): \n{legthCam2}\n--------------\n'
+        strPontosCam += f'Meteor cam1 Speed (km/s): \n{speedCam1}\n--------------\n'
+        strPontosCam += f'Meteor cam2 Speed (km/s): \n{speedCam2}\n--------------\n'
+        strPontosCam += "\n-----Distance Points A B between cameras-------\n"
+        strPontosCam += f'Initial distance of the meteor between the cameras (km): \n{initialDistance}\n--------------\n'
+        strPontosCam += f'Final distance of the meteor between the cameras (km): \n{finalDistance}\n--------------\n'
+        
+        with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
-            filesCam.write("\n using cam = " + str(leitura['cam'][0])+ '\n')
-        if (leitura['cam'][0] == 1):
-            if (velMet(pontosMeteoro['v1Acam'],pontosMeteoro['v1Bcam'],leitura['deltaT1'][0]) < 11.):
-                with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
+            filesCam.write("\n using cam = " + str(readout['cam'][0])+ '\n')
+            
+        if (readout['cam'][0] == 1):
+            if (velMet(meteorPoints['v1Acam'],meteorPoints['v1Bcam'],readout['deltaT1'][0]) < 11.):
+                with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
                     filesCam.write("slow velocity")
             return
-        elif (leitura['cam'][0] == 2):
-            if (velMet(pontosMeteoro['v2Acam'],pontosMeteoro['v2Bcam'],leitura['deltaT2'][0]) < 11.):
-                with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
+        
+        elif (readout['cam'][0] == 2):
+            if (velMet(meteorPoints['v2Acam'],meteorPoints['v2Bcam'],readout['deltaT2'][0]) < 11.):
+                with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
                     filesCam.write("slow velocity")
                 return
 
 
-    if leitura['opcao'][0] == 4:
-
-        strPontosCam ='velocidade do meteoro (km/s)\n'
-        strPontosCam +=str(sqrt(Vx4**2+Vy4**2+Vz4**2)/1000.)
-        with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
+    if readout['opcao'][0] == 4:
+        strPontosCam =f'Meteor Speed (km/s):\n{velocityOp4}\n --- \n'
+        with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
-        if ((sqrt(Vx4**2+Vy4**2+Vz4**2)/1000.)<11.):
-            with open(variablesPIM.directorystr+ '/'+'dados.txt',"a") as filesCam:
+        if (velocityOp4<11.):
+            with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
                 filesCam.write("slow velocity")
-            # return
 
-        
     print(strPontosCam)
-
 
     ###############################################################################################
 
-    # Dados iniciais do meteoro em coordenadas geocêntricas
+    # data iniciais do meteoro em coordenadas geocêntricas
     # Cria as listas de acordo com número de massas a serem integradas
 
             
     transprojCart = Transformer.from_crs({"proj":'geocent',"datum":'WGS84',"ellps":'WGS84'},"lla")  
     transprojGeo = Transformer.from_crs("lla",{"proj":'geocent',"ellps":'WGS84',"datum":'WGS84'})
-    #print( pyproj.Transformer(init='epsg:4326',ecef,lla, x, y, z))
 
     A=[]
     for i in massaPont:    #determina as massas q serao rodadas
@@ -637,7 +633,7 @@ def PIMRun(arquivoMeteoroEntrada):
     for i in range (len(massaPont)):
         X1[i],Y1[i],Z1[i]=transprojGeo.transform(P1lat,P1lon,P1alt*1000.)
         X2[i],Y2[i],Z2[i]=transprojGeo.transform(P2lat,P2lon,P2alt*1000.)
-        if leitura['opcao'][0] == 4:
+        if readout['opcao'][0] == 4:
             Vx1[i]= Vx4
             Vy1[i]= Vy4
             Vz1[i]= Vz4
@@ -666,7 +662,6 @@ def PIMRun(arquivoMeteoroEntrada):
 
     for i in range (len(massaPont)):
         X[i],Y[i],Z[i]=(X1[i]+X2[i])/2,(Y1[i]+Y2[i])/2,(Z1[i]+Z2[i])/2
-        #X[i],Y[i],Z[i]=(X2[i]),(Y2[i]),(Z2[i])
         Vx[i],Vy[i],Vz[i]=Vx1[i],Vy1[i],Vz1[i]
         latM[i],lonM[i],altM[i] = transprojCart.transform(X[i],Y[i],Z[i])
 
@@ -675,14 +670,12 @@ def PIMRun(arquivoMeteoroEntrada):
     arquivoQueda.write("time(s) vel alt(km) lon lat \n")
 
     for j in range (len(massaPont)):
-
         tempo=0
         passo=5
         ASection=A[j]
         massaParticula=massaPont[j]
 
         while altM[j]>0.:
-
             os.system('clear')
             Vm=np.sqrt(Vx[j]**2+Vy[j]**2+Vz[j]**2)
             if (((altM[j]/1000)<0.005)):
@@ -729,6 +722,7 @@ def PIMRun(arquivoMeteoroEntrada):
             sim.additional_forces = arrasto
             sim.force_is_velocity_dependent = 1
             sim.integrate(passo)
+            
             tempo+=passo
             latA,lonA,altA = latM[j],lonM[j],altM[j]
             X[j],Y[j],Z[j],Vx[j],Vy[j],Vz[j] =ps[1].x,ps[1].y,ps[1].z,ps[1].vx,ps[1].vy,ps[1].vz
@@ -741,9 +735,7 @@ def PIMRun(arquivoMeteoroEntrada):
             if ((altM[j]/1000)<10):
                 passo=100/Vm
             
-    #        if ((latM[j]/latA)<1):
-    #            passo=-passo/10
-    #        print(tempo,latM[j],lonM[j],altM[j]/1000)
+
         print(massaPont[j],latA,lonA,altA)
         arquivo.write('  1-  '+str(tempo)+' g: '+str(lonA)+" , "+str(latA)+' , '+str(altA/1000.)+' @399 \n')
     arquivo.close()
@@ -756,7 +748,6 @@ def PIMRun(arquivoMeteoroEntrada):
 
     for i in range (len(massaPont)):
         X[i],Y[i],Z[i]=(X1[i]+X2[i])/2,(Y1[i]+Y2[i])/2,(Z1[i]+Z2[i])/2
-        # X[i],Y[i],Z[i] = X1[i],Y1[i],Z1[i]
         Vx[i],Vy[i],Vz[i]=Vx1[i],Vy1[i],Vz1[i]
         latM[i],lonM[i],altM[i] = transprojCart.transform(X[i],Y[i],Z[i])
 
@@ -777,23 +768,26 @@ def PIMRun(arquivoMeteoroEntrada):
         os.system('clear')
         print(tempo,"altura atual (km): ",altM[j]/1000.)
         print(i, flush=True)
+        
         Vm=np.sqrt(Vx[j]**2+Vy[j]**2+Vz[j]**2)
+        
         if ((altM[j]/1000)>150) and ((altM[j]/1000)<990):
             passo=-10000/Vm
         else:
             passo=-2000/Vm
+            
         strCart=str(str(tempo)+" "+str(X[j]/1000.)+" "+str(Y[j]/1000.)+" "+str(Z[j]/1000.)+" "+str(Vx[j]/1000.)+" "+
                     str(Vy[j]/1000.)+" "+str(Vz[j]/1000.)+" \n")
         arquivoCart.write(strCart)
         arquivoCoord.write(str(str(tempo)+" "+str(Vm)+" "+str(altM[j]/1000)+" "+str(lonM[j])+" "+str(latM[j])+" \n"))
         sim = rebound.Simulation()
         sim.integrator = "ias15"
-    #   sim.ri_ias15.epsilon=1e-3
+
         sim.units = ('m', 's', 'kg')
         sim.add(m=5.97219e24,hash='earth')
         meteor = rebound.Particle(m=massaPont[j],x=X[j],y=Y[j],z=Z[j],vx=Vx[j],vy=Vy[j],vz=Vz[j])
         sim.add(meteor)
-    #    sim.status()
+
         ps=sim.particles
         atmos = msise00.run(time=datetime(horaMeteoro.year,horaMeteoro.month,horaMeteoro.day,horaMeteoro.hour,horaMeteoro.minute,horaMeteoro.second), altkm=altM[j]/1000., glat=latM[j], glon=lonM[j])
         RHO=(float(atmos['Total']))
@@ -804,11 +798,11 @@ def PIMRun(arquivoMeteoroEntrada):
         sim.additional_forces = arrasto
         sim.force_is_velocity_dependent = 1
         sim.integrate(passo)
-    #    sim.status()
+
         tempo+=passo
         X[j],Y[j],Z[j],Vx[j],Vy[j],Vz[j] =ps[1].x,ps[1].y,ps[1].z,ps[1].vx,ps[1].vy,ps[1].vz
         latM[j],lonM[j],altM[j] = transprojCart.transform(ps[1].x,ps[1].y,ps[1].z)
-    #        print(tempo,latM[j],lonM[j],altM[j]/1000)
+
     with open((variablesPIM.directorystr+'/FinalCartesian.dat'),'w') as f:
         f.write(strCart)
 
@@ -818,8 +812,8 @@ def PIMRun(arquivoMeteoroEntrada):
     ############################################################################################################
     # fazer arquivo com a trajetoria total do meteoro
     ##
-    #  for line in reversed(list(open(variablesPIM.directorystr+'/coordinates.txt'))):
-    #    print(line.rstrip())
+    for line in reversed(list(open(variablesPIM.directorystr+'/coordinates.txt'))):
+        print(line.rstrip())
         
     ################################################################################################################
     #salvar os dados dos pontos de queda do meteorito e vai gerar ao mapa de queda (primeira integraçao para frente)
@@ -835,8 +829,8 @@ def PIMRun(arquivoMeteoroEntrada):
     saida['mass'] = massaPont
     colunas = ['mass','time(s)','lon','lat']
     saida.columns = colunas
-    #display(saida)
-    arquivo=open((variablesPIM.directorystr+'/dados.txt'),'a')
+
+    arquivo=open((variablesPIM.directorystr+'/data.txt'),'a')
     arquivo.write(('\n \n Strewn Field: \n'))
     arquivo.write(saida.to_string(index=False))
     arquivo.write('\n \n')
