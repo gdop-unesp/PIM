@@ -547,8 +547,8 @@ def PIMRun(arquivoMeteoroEntrada):
     velocityOp4 = str(sqrt(Vx4**2+Vy4**2+Vz4**2)/1000.)
 
     if readout['opcao'][0] == 1:
-        strPontosCam = f'Meteor Length (km):\n{distance}\n'
-        strPontosCam += f'Meteor Speed (km/s):\n{velocity}\n --- \n'
+        strPontosCam = f'Meteor Length (km):\n{distance}  \n--------------\n'
+        strPontosCam += f'Meteor Speed (km/s):\n{velocity}\n--------------\n'
         with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
         if ( velocity < 11.):
@@ -560,10 +560,10 @@ def PIMRun(arquivoMeteoroEntrada):
         
         strPontosCam =  str(meteorPoints) + '\n' + '--------------\n'
         strPontosCam += f'Distance between stations: \n{distStations}\n--------------\n'
-        strPontosCam += f'Meteor cam1 Length (km):  \n{legthCam1}\n--------------\n'
-        strPontosCam += f'Meteor cam2 Length (km): \n{legthCam2}\n--------------\n'
-        strPontosCam += f'Meteor cam1 Speed (km/s): \n{speedCam1}\n--------------\n'
-        strPontosCam += f'Meteor cam2 Speed (km/s): \n{speedCam2}\n--------------\n'
+        strPontosCam += f'Meteor cam1 Length (km):   \n{legthCam1}   \n--------------\n'
+        strPontosCam += f'Meteor cam2 Length (km):   \n{legthCam2}   \n--------------\n'
+        strPontosCam += f'Meteor cam1 Speed (km/s):  \n{speedCam1}   \n--------------\n'
+        strPontosCam += f'Meteor cam2 Speed (km/s):  \n{speedCam2}   \n--------------\n'
         strPontosCam += "\n-----Distance Points A B between cameras-------\n"
         strPontosCam += f'Initial distance of the meteor between the cameras (km): \n{initialDistance}\n--------------\n'
         strPontosCam += f'Final distance of the meteor between the cameras (km): \n{finalDistance}\n--------------\n'
@@ -586,7 +586,7 @@ def PIMRun(arquivoMeteoroEntrada):
 
 
     if readout['opcao'][0] == 4:
-        strPontosCam =f'Meteor Speed (km/s):\n{velocityOp4}\n --- \n'
+        strPontosCam =f'Meteor Speed (km/s):\n{velocityOp4}\n--------------\n'
         with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
         if (velocityOp4<11.):
@@ -599,7 +599,6 @@ def PIMRun(arquivoMeteoroEntrada):
 
     # data iniciais do meteoro em coordenadas geocêntricas
     # Cria as listas de acordo com número de massas a serem integradas
-
             
     transprojCart = Transformer.from_crs({"proj":'geocent',"datum":'WGS84',"ellps":'WGS84'},"lla")  
     transprojGeo = Transformer.from_crs("lla",{"proj":'geocent',"ellps":'WGS84',"datum":'WGS84'})
