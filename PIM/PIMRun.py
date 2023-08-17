@@ -566,18 +566,16 @@ def PIMRun(arquivoMeteoroEntrada):
         strPontosCam += f'Meteor cam2 Speed (km/s):  \n{speedCam2}   \n--------------\n'
         strPontosCam += "\n-----Distance Points A B between cameras-------\n"
         strPontosCam += f'Initial distance of the meteor between the cameras (km): \n{initialDistance}\n--------------\n'
-        strPontosCam += f'Final distance of the meteor between the cameras (km): \n{finalDistance}\n--------------\n'
+        strPontosCam += f'Final distance of the meteor between the cameras (km): \n{finalDistance}    \n--------------\n'
         
         with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
             filesCam.write(strPontosCam)
             filesCam.write("\n using cam = " + str(readout['cam'][0])+ '\n')
-            
         if (readout['cam'][0] == 1):
             if (velMet(meteorPoints['v1Acam'],meteorPoints['v1Bcam'],readout['deltaT1'][0]) < 11.):
                 with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
                     filesCam.write("slow velocity")
             return
-        
         elif (readout['cam'][0] == 2):
             if (velMet(meteorPoints['v2Acam'],meteorPoints['v2Bcam'],readout['deltaT2'][0]) < 11.):
                 with open(variablesPIM.directorystr+ '/'+'data.txt',"a") as filesCam:
@@ -597,57 +595,56 @@ def PIMRun(arquivoMeteoroEntrada):
 
     ###############################################################################################
 
-    # data iniciais do meteoro em coordenadas geocêntricas
-    # Cria as listas de acordo com número de massas a serem integradas
-            
+    # Initial meteor data in geocentric coordinates
+    # Create lists according to the number of masses to be integrated
+
     transprojCart = Transformer.from_crs({"proj":'geocent',"datum":'WGS84',"ellps":'WGS84'},"lla")  
     transprojGeo = Transformer.from_crs("lla",{"proj":'geocent',"ellps":'WGS84',"datum":'WGS84'})
 
-    A=[]
-    for i in massaPont:    #determina as massas q serao rodadas
-        print(i)
-        v=i/densMeteor
-        r=(v*3./(4.*math.pi))**(1./3.)/100.
+    A = []
+    for i in massaPont:                         # Determine the masses to be run
+        v = i/densMeteor                        # Define the volume (mass/density)
+        r = (v*3./(4.*math.pi))**(1./3.)/100.   # Define the radius
         A.append(math.pi*r*r)
 
-    # condiçoes iniciais do meteoro, posiçao e velocidade
-    X1=[None] * len(massaPont)
-    Y1=[None] * len(massaPont)
-    Z1=[None] * len(massaPont)
-    X2=[None] * len(massaPont)
-    Y2=[None] * len(massaPont)
-    Z2=[None] * len(massaPont)
-    Vx1=[None] * len(massaPont)
-    Vy1=[None] * len(massaPont)
-    Vz1=[None] * len(massaPont)
-    altM=[None] * len(massaPont)
-    latM=[None] * len(massaPont)
-    lonM=[None] * len(massaPont)
-    altM2=[None] * len(massaPont)
-    latM2=[None] * len(massaPont)
-    lonM2=[None] * len(massaPont)
+    # Initial conditions of the meteor, position, and velocity    
+    X1 = [None] * len(massaPont)
+    Y1 = [None] * len(massaPont)
+    Z1 = [None] * len(massaPont)
+    X2 = [None] * len(massaPont)
+    Y2 = [None] * len(massaPont)
+    Z2 = [None] * len(massaPont)
+    Vx1= [None] * len(massaPont)
+    Vy1= [None] * len(massaPont)
+    Vz1 = [None] * len(massaPont)
+    altM = [None] * len(massaPont)
+    latM = [None] * len(massaPont)
+    lonM = [None] * len(massaPont)
+    altM2 = [None] * len(massaPont)
+    latM2 = [None] * len(massaPont)
+    lonM2 = [None] * len(massaPont)
 
-    particulas=[None] * len(massaPont)
+    particulas = [None] * len(massaPont)
 
     for i in range (len(massaPont)):
-        X1[i],Y1[i],Z1[i]=transprojGeo.transform(P1lat,P1lon,P1alt*1000.)
-        X2[i],Y2[i],Z2[i]=transprojGeo.transform(P2lat,P2lon,P2alt*1000.)
+        X1[i],Y1[i],Z1[i] = transprojGeo.transform(P1lat,P1lon,P1alt*1000.)
+        X2[i],Y2[i],Z2[i] = transprojGeo.transform(P2lat,P2lon,P2alt*1000.)
         if readout['opcao'][0] == 4:
-            Vx1[i]= Vx4
-            Vy1[i]= Vy4
-            Vz1[i]= Vz4
+            Vx1[i] = Vx4
+            Vy1[i] = Vy4
+            Vz1[i] = Vz4
         else:
-            Vx1[i]= (X2[i]-X1[i])/deltaT
-            Vy1[i]= (Y2[i]-Y1[i])/deltaT
-            Vz1[i]= (Z2[i]-Z1[i])/deltaT
+            Vx1[i] = (X2[i]-X1[i])/deltaT
+            Vy1[i] = (Y2[i]-Y1[i])/deltaT
+            Vz1[i] = (Z2[i]-Z1[i])/deltaT
         particulas[i]=i
         
-    X=[None] * len(massaPont)
-    Y=[None] * len(massaPont)
-    Z=[None] * len(massaPont)
-    Vx=[None] * len(massaPont)
-    Vy=[None] * len(massaPont)
-    Vz=[None] * len(massaPont)
+    X = [None] * len(massaPont)
+    Y = [None] * len(massaPont)
+    Z = [None] * len(massaPont)
+    Vx= [None] * len(massaPont)
+    Vy= [None] * len(massaPont)
+    Vz= [None] * len(massaPont)
 
     ###############################################################################################
 
