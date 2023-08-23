@@ -54,7 +54,7 @@ def check_existence(directory_path: str, extension: str) -> list:
             if extension in file:
                 file_list.append(os.path.join(root, file))
     if not file_list:
-        print("Error: There are no files with the given extension.")
+        print("Error: There are no files '{extension}' extension.")
         exit()
     else:
         return file_list

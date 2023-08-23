@@ -4,6 +4,7 @@ import PIMRun
 import PIMTrajectory
 import validationPIM
 import warnings
+import os
 
 
 warnings.filterwarnings('ignore')
@@ -121,14 +122,41 @@ def askForDir():
     print(directoriesList, dateList, optionList)
     return directoriesList, dateList, optionList
     
+def verificationFiles(directoriesFile):
+    
+    filesRun = "filesRun.txt"
+    
+    with open(directoriesFile, "r") as f:
+        nameDirs = f.read().splitlines()
+
+    for nameDir in nameDirs:
+        if not os.path.exists(nameDir) and os.path.isdir(nameDir):
+            print(f"The directory '{nameDir}' doesn't exists. Please remove it from the list.")
+            return False
+
+        if not os.path.exists(os.path.join(os.getcwd(), nameDir, filesRun)):
+            print(f"The file '{filesRun}' doesn't exists.")
+            return False
+            
+        with open(filesRun, "r") as f:
+            fileNames = f.read().splitlines()
+            
+        for fileName in fileNames:
+            if not os.path.exists(fileName):
+                print(f"The file '{fileName}' listed in '{filesRun}' of '{nameDir}' doesn't exist.")
+                return False
+    return True
+
 
 ##########################################################################################################
 
 directoriesList,dateList,optionList = askForDir()
 
-# adicionar funcao que verifica se os arquivos inicias ja foram criados
-
-createFileInput.multiCreate(directoriesList,dateList,optionList)
+if verificationFiles == True:
+    pass
+else: 
+    print("We haven't verified the existence of your initial files. We will create them from the .XML files.")
+    createFileInput.multiCreate(directoriesList,dateList,optionList)
 
 #continueIntegration ()
 

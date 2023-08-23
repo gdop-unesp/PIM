@@ -2,9 +2,9 @@ import os
 
 # Location Variables
 
-directorystr = str(os.path.abspath(__file__))
+directorystr = str(os.getcwd())
 
-directory = os.path.abspath(__file__)
+directory = os.getcwd()
 
 fileData = 'pastas.txt'
 

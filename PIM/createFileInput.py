@@ -4,8 +4,10 @@ import xmltodict
 import variablesPIM  
 import validationPIM  
 import warnings
+import os
 
 warnings.filterwarnings('ignore')
+
 
 def convertToDictionary (cameraList, dirRun):
   """
