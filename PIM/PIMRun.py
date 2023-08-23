@@ -478,6 +478,7 @@ def writeData (readout, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,
     gravarEntrada.write(linha)
     gravarEntrada.close()
 
+    
 def PIMRun(arquivoMeteoroEntrada):
 
 
@@ -505,7 +506,7 @@ def PIMRun(arquivoMeteoroEntrada):
 #################################################################################################
 
     
-    horaMeteoro=datetime(dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],\         
+    horaMeteoro = datetime(dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],\         
                          dataMeteoro[3],dataMeteoro[4],dataMeteoro[5])      # Meteor Timestamp (year, month, day, hour, minute, second)
     
     massaPont = massPoint (readout)             # Masses for impact points kg [0.001, 0.01, 0.1, 1, 10, 50, 100, 150]
@@ -545,6 +546,11 @@ def PIMRun(arquivoMeteoroEntrada):
     initialDistance = distMet(meteorPoints['v2Acam'],meteorPoints['v1Acam'])
     finalDistance = distMet(meteorPoints['v2Bcam'],meteorPoints['v1Bcam'])
     velocityOp4 = str(sqrt(Vx4**2+Vy4**2+Vz4**2)/1000.)
+    
+    
+    ###############################################################################################
+
+    # Write Data
 
     if readout['opcao'][0] == 1:
         strPontosCam = f'Meteor Length (km):\n{distance}  \n--------------\n'
