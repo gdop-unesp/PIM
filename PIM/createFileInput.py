@@ -156,7 +156,7 @@ def writeFilesRun(df, dateM, option,dirRun):
   readFile = open(str(variablesPIM.directory.joinpath('standart.txt').resolve()))         # Open standard.txt file
   standard = readFile.read()                                                              # Read standard.txt file
   readFile.close()                                                                        # Close standard.txt file
-  FilesRun = validationPIM.createFileWrite(variablesPIM.directory, "filesRun.txt")             # Open filesRun.txt file in write mode
+  FilesRun = validationPIM.createFileWrite(variablesPIM.directory, f'filesRun{dirRun}.txt')             # Open filesRun.txt file in write mode
   FilesRun.write("#comments lines #\n")                                                   # Writes in the filesRun.txt file
 
   for k in range(0,2):
@@ -234,7 +234,7 @@ def writeFilesRun(df, dateM, option,dirRun):
 
   FilesRun.write("#not delete this line #")
   FilesRun.close()
-  shutil.copyfile(variablesPIM.directory.joinpath("filesRun.txt").resolve(),variablesPIM.directory.joinpath(dirRun).joinpath("filesRun.txt").resolve())
+  shutil.copyfile(variablesPIM.directory.joinpath(f'filesRun{dirRun}.txt').resolve(),variablesPIM.directory.joinpath(dirRun).joinpath("filesRun.txt").resolve())
 
 def createFiles(dirRun,dateM,option):
   """

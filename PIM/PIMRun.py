@@ -15,6 +15,7 @@ import sympy as sym
 import variablesPIM
 import validationPIM
 from typing import Tuple
+import multiprocessing
 
 
 def convEqToHor(y, m, d, ho, mi, se, alt, lon, lat, ra, dec):
@@ -506,7 +507,7 @@ def PIMRun(arquivoMeteoroEntrada):
 #################################################################################################
 
     
-    horaMeteoro = datetime(dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],\         
+    horaMeteoro = datetime(dataMeteoro[0],dataMeteoro[1],dataMeteoro[2],     
                          dataMeteoro[3],dataMeteoro[4],dataMeteoro[5])      # Meteor Timestamp (year, month, day, hour, minute, second)
     
     massaPont = massPoint (readout)             # Masses for impact points kg [0.001, 0.01, 0.1, 1, 10, 50, 100, 150]
@@ -876,3 +877,4 @@ def PIMRun(arquivoMeteoroEntrada):
         ).add_to(map_osm)
     map_osm.save(variablesPIM.directorystr+'/strewnField.html')
     return
+

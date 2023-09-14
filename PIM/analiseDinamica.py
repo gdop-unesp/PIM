@@ -5,6 +5,7 @@ import PIMTrajectory
 import validationPIM
 import warnings
 import os
+import multiprocessing
 
 
 warnings.filterwarnings('ignore')
@@ -24,6 +25,17 @@ def dataSearch():
         filesToRun = dataSearch()
         print(filesToRun)
     """
+    
+    # Create an empty list to store the files to run
+    filesToRun = []
+
+    # List all files in the directory
+    for file in variables.directorystr.iterdir():
+        if file.is_file() and file.name.startswith("filesRun") and file.name.endswith(".txt"):
+            with file.open() as readFile:
+                lines = readFile.readlines()
+                filesToRun.extend(lines)
+
     readFile = open(variables.directorystr.joinpath('filesRun'))
     filesToRun = readFile.readlines()
     readFile.close()
@@ -51,7 +63,7 @@ def integration(filesToRun):
     for i,text in enumerate(filesToRun):
         if (text[0] != '#' and text[0] != '\n'):
             text = text[:-1]            # remove \n
-            PIMRun.PIMRun(text)           # atmosphere (ground and then up to 1000 km altitude)
+            runInParallel(text)           # atmosphere (ground and then up to 1000 km altitude)
             PIMTrajectory.PIMTrajectory(text)    # space (from 1000 km altitude)
 
 def continueIntegration ():
@@ -147,7 +159,18 @@ def verificationFiles(directoriesFile):
                 return False
     return True
 
+def runInParallel(args_list):
+    # Create a process pool
+    pool = multiprocessing.Pool()
 
+    # Use the pool's map method to apply the function to the arguments in parallel
+    results = pool.map(PIMRun.PIMRun, args_list)
+
+    # Close the pool after completion
+    pool.close()
+    pool.join()
+
+    return results
 ##########################################################################################################
 
 directoriesList,dateList,optionList = askForDir()
