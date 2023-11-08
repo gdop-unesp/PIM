@@ -122,10 +122,10 @@ def saveDataInVariables(dfP, dfF):
 
   '''
 
-  moments = [0.5,1.0,1.5]
+  instants = [0.5,0.7,1.0,1.2,1.5]
   dfR = pd.DataFrame([], columns = ['camera', 'lat','lon','alt','dur','azIni','elIni','azFin','elFin','raIni','decIni','raFin','decFin'])
   for i,cam in enumerate(dfP):
-    for time in moments:
+    for time in instants:
       camera = cam['name'][0] +'_'+f'{time:.1f}'
       lat = cam['lat'][0]
       lon = cam['lng'][0]
