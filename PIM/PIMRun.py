@@ -1,6 +1,6 @@
 import rebound
 import folium
-import msise00
+from nrlmsise00 import msise_model
 import datetime
 from datetime import datetime, timedelta
 from datetime import datetime
@@ -53,9 +53,9 @@ def sphToCartGeo(RTP):
     Returns:
         np.ndarray: A 1D numpy array with the x, y, and z coordinates (in km) in the geographic coordinate system.
     '''
-    rc = RTP[0] * 1000
-    lonc = np.rad2deg(RTP[1])
-    latc = np.rad2deg(RTP[2])
+    rc = float(RTP[0] * 1000)
+    lonc = float(np.rad2deg(RTP[1]))
+    latc = float(np.rad2deg(RTP[2]))
     trans_proj_geo = Transformer.from_crs("lla", {"proj": 'geocent', "ellps": 'WGS84', "datum": 'WGS84'})
     xc, yc, zc = trans_proj_geo.transform(latc, lonc, rc)
     return np.array([xc, yc, zc]) / 1000
@@ -86,7 +86,7 @@ def carttoSphGeo(XYZ):
         np.ndarray: A 1D numpy array with the radial distance (in km), polar angle (in radians), and azimuthal angle (in radians) in the geographic coordinate system.
     '''
     transprojCart = Transformer.from_crs({"proj":'geocent',"datum":'WGS84',"ellps":'WGS84'},"lla")
-    XYZc = XYZ * 1000
+    XYZc = [XYZ[0]*1000,XYZ[1]*1000,XYZ[2]*1000]    
     lat, lon, alt = transprojCart.transform(XYZc[0], XYZc[1], XYZc[2])
     return np.array([alt/1000, np.radians(lon), np.radians(lat)])
 
@@ -480,6 +480,71 @@ def writeData (readout, meteorN,P1lat,P1lon,P1alt,P2lat,P2lon,P2alt,Vx4,Vy4,Vz4,
     gravarEntrada.close()
 
     
+def calculateRHO(alt, lat, lon):
+    horaMeteoro = datetime.now()
+    RHO = float(msise_model(
+        datetime(horaMeteoro.year, horaMeteoro.month, horaMeteoro.day, horaMeteoro.hour, horaMeteoro.minute, horaMeteoro.second),
+        alt=alt / 1000., lat=lat, lon=lon, f107=150., f107a=150, ap=4, lst=16)[0][5])
+    RHO *= 1000.
+    return RHO
+
+def calculateRHO(alt, lat, lon):
+    '''
+    Calculates the atmospheric density (RHO) at a given altitude, latitude, and longitude.
+
+    Args:
+        alt (float): The altitude in meters above the Earth's surface.
+        lat (float): The latitude in degrees.
+        lon (float): The longitude in degrees.
+
+    Returns:
+        float: The atmospheric density (RHO) in kg/m³ at the specified location.
+    '''
+
+    # Get the current time
+    meteorHour = datetime.now()
+
+    # Calculate atmospheric density using the MSISE model
+    RHO = float(msise_model(
+        datetime(meteorHour.year, meteorHour.month, meteorHour.day, meteorHour.hour, meteorHour.minute, meteorHour.second),
+        alt=alt / 1000., lat=lat, lon=lon, f107=150., f107a=150, ap=4, lst=16)[0][5])
+
+    # Convert RHO to kg/m³
+    RHO *= 1000.
+
+    return RHO
+
+
+def updateParticle(sim, RHO, CD, ASection, massaParticula, altM, j):
+    '''
+    Update the particle's position and velocity based on atmospheric parameters.
+
+    Args:
+        sim (rebound.Simulation): The simulation object.
+        RHO (float): Atmospheric density in kg/m³ at the particle's location.
+        CD (float): Drag coefficient.
+        ASection (float): Cross-sectional area.
+        massaParticula (float): Mass of the particle.
+        j (int): Index of the particle.
+
+    Returns:
+        float: The time step (passo) used for integration.
+    '''
+    ps = sim.particles
+    Vm = np.sqrt(ps[j].vx**2 + ps[j].vy**2 + ps[j].vz**2)
+
+    if 150 < (altM[j] / 1000) < 990:
+        passo = -10000 / Vm
+    else:
+        passo = -2000 / Vm
+
+    ps[j].ax -= RHO * CD * ASection * (np.sqrt(ps[j].vx**2 + ps[j].vy**2 + ps[j].vz**2)) * ps[j].vx / (2. * massaParticula)
+    ps[j].ay -= RHO * CD * ASection * (np.sqrt(ps[j].vx**2 + ps[j].vy**2 + ps[j].vz**2)) * ps[j].vy / (2. * massaParticula)
+    ps[j].az -= RHO * CD * ASection * (np.sqrt(ps[j].vx**2 + ps[j].vy**2 + ps[j].vz**2)) * ps[j].vz / (2. * massaParticula)
+
+    return passo
+
+
 def PIMRun(arquivoMeteoroEntrada):
 
 
@@ -654,227 +719,244 @@ def PIMRun(arquivoMeteoroEntrada):
     Vz= [None] * len(massaPont)
 
     ###############################################################################################
+    # Integration forward
+    # Integration of falling particles (data saved in .out files)
 
-    #integraçao pra frente
-    # Integração dos pontos de queda (dados salvos em arquivos .out)
-    # (este procedimento é demorado devido ao arrasto atmosférico)
+    # Initialize particle properties
+    for i in range(len(massaPont)):
+        X[i], Y[i], Z[i] = (X1[i] + X2[i]) / 2, (Y1[i] + Y2[i]) / 2, (Z1[i] + Z2[i]) / 2
+        Vx[i], Vy[i], Vz[i] = Vx1[i], Vy1[i], Vz1[i]
+        latM[i], lonM[i], altM[i] = transprojCart.transform(X[i], Y[i], Z[i])
 
+    # Create output files for saving results
+    file = open((variablesPIM.directorystr + '/saida.out'), 'w')
+    fileFalling = open((variablesPIM.directorystr + '/queda.dat'), 'w')
+    fileFalling.write("time(s) vel alt(km) lon lat \n")
 
-    #particulas=[0]
-    #while len(particulas)!=0:
+    # Perform integration for each particle
+    for j in range(len(massaPont)):
+        tempo = 0
+        passo = 5
+        ASection = A[j]
+        massaParticula = massaPont[j]
 
-    for i in range (len(massaPont)):
-        X[i],Y[i],Z[i]=(X1[i]+X2[i])/2,(Y1[i]+Y2[i])/2,(Z1[i]+Z2[i])/2
-        Vx[i],Vy[i],Vz[i]=Vx1[i],Vy1[i],Vz1[i]
-        latM[i],lonM[i],altM[i] = transprojCart.transform(X[i],Y[i],Z[i])
-
-    arquivo=open((variablesPIM.directorystr+'/saida.out'),'w')
-    arquivoQueda=open((variablesPIM.directorystr+'/queda.dat'),'w')
-    arquivoQueda.write("time(s) vel alt(km) lon lat \n")
-
-    for j in range (len(massaPont)):
-        tempo=0
-        passo=5
-        ASection=A[j]
-        massaParticula=massaPont[j]
-
-        while altM[j]>0.:
+        # Integrate until the particle's altitude is above 0
+        while altM[j] > 0.:
             os.system('clear')
-            Vm=np.sqrt(Vx[j]**2+Vy[j]**2+Vz[j]**2)
-            if (((altM[j]/1000)<0.005)):
-                passo=0.1/Vm
-            elif (((altM[j]/1000)<0.040)):
-                passo=2/Vm
-            elif (((altM[j]/1000)<0.150)):
-                passo=20/Vm
-            elif (((altM[j]/1000)<0.2)):
-                passo=50/Vm
-            elif (((altM[j]/1000)<0.4)):
-                passo=100/Vm            
-            elif (((altM[j]/1000)<1)):
-                passo=200/Vm
-            elif (((altM[j]/1000)<3)):
-                passo=500/Vm
-            elif ((altM[j]/1000)<5):
-                passo=1000/Vm
+            Vm = np.sqrt(Vx[j]**2 + Vy[j]**2 + Vz[j]**2)
+
+            # Adjust the time step based on altitude
+            if ((altM[j] / 1000) < 0.005):
+                passo = 0.1 / Vm
+            elif ((altM[j] / 1000) < 0.040):
+                passo = 2 / Vm
+            elif ((altM[j] / 1000) < 0.150):
+                passo = 20 / Vm
+            elif ((altM[j] / 1000) < 0.2):
+                passo = 50 / Vm
+            elif ((altM[j] / 1000) < 0.4):
+                passo = 100 / Vm
+            elif ((altM[j] / 1000) < 1):
+                passo = 200 / Vm
+            elif ((altM[j] / 1000) < 3):
+                passo = 500 / Vm
+            elif ((altM[j] / 1000) < 5):
+                passo = 1000 / Vm
             else:
-                passo=2000/Vm
-            
-            print(tempo,"massa(kg): ",massaPont[j],"altura atual (km): ",altM[j]/1000.)
-            arquivoQueda.write(str(str(tempo)+" "+str(Vm)+" "+str(altM[j]/1000)+" "+str(lonM[j])+" "+str(latM[j])+" \n"))
+                passo = 2000 / Vm
+
+            print(tempo, "massa(kg): ", massaPont[j], "altura atual (km): ", altM[j] / 1000.)
+
+            # Write altitude, velocity, and position to the output file
+            fileFalling.write(str(str(tempo) + " " + str(Vm) + " " + str(altM[j] / 1000) + " " + str(lonM[j]) + " " + str(latM[j]) + " \n"))
+
+            # Initialize the simulation and add the Earth and meteor particle
             sim = rebound.Simulation()
             sim.integrator = "ias15"
-            #sim.ri_ias15.epsilon=1e-3
             sim.units = ('m', 's', 'kg')
-            sim.add(m=5.97219e24,hash='earth')
-            meteor = rebound.Particle(m=massaPont[j],x=X[j],y=Y[j],z=Z[j],vx=Vx[j],vy=Vy[j],vz=Vz[j])
+            sim.add(m = 5.97219e24, hash ='earth')
+            meteor = rebound.Particle(m = massaPont[j], x = X[j], y = Y[j], z = Z[j], vx = Vx[j], vy = Vy[j], vz = Vz[j])
             sim.add(meteor)
-            #sim.status()
-            ps=sim.particles
-            atmos = msise00.run(time=datetime(horaMeteoro.year,horaMeteoro.month,horaMeteoro.day,horaMeteoro.hour,horaMeteoro.minute,horaMeteoro.second), altkm=altM[j]/1000., glat=latM[j], glon=lonM[j])
-            RHO=(float(atmos['Total']))
-            
-            def arrasto(reb_sim):
-                #latA,lonA,altA = transprojCart.transform(ps[1].x,ps[1].y,ps[1].z)
-                #atmos = msise00.run(time=datetime(horaMeteoro.year,horaMeteoro.month,horaMeteoro.day,horaMeteoro.hour,horaMeteoro.minute,horaMeteoro.second), altkm=altA/1000., glat=latA, glon=lonA)
-                #RHO=(float(atmos['Total']))
-                ps[1].ax -= RHO*CD*ASection*(np.sqrt(ps[1].vx**2+ps[1].vy**2+ps[1].vz**2))*ps[1].vx/(2.*massaParticula)
-                ps[1].ay -= RHO*CD*ASection*(np.sqrt(ps[1].vx**2+ps[1].vy**2+ps[1].vz**2))*ps[1].vy/(2.*massaParticula)
-                ps[1].az -= RHO*CD*ASection*(np.sqrt(ps[1].vx**2+ps[1].vy**2+ps[1].vz**2))*ps[1].vz/(2.*massaParticula)
 
+            ps = sim.particles
+
+            # Calculate atmospheric density (RHO) at the meteor's location
+            RHO = float(msise_model(datetime(horaMeteoro.year, horaMeteoro.month, horaMeteoro.day,
+                                        horaMeteoro.hour, horaMeteoro.minute, horaMeteoro.second), 
+                                        alt = altM[j] / 1000., lat = latM[j], lon = lonM[j], f107 = 150., f107a = 150, ap = 4, lst = 16)[0][5])
+            RHO *= 1000.
+
+            # Define the drag force due to atmospheric density
+            def arrasto(reb_sim):
+                ps[1].ax -= RHO * CD * ASection * (np.sqrt(ps[1].vx**2 + ps[1].vy**2 + ps[1].vz**2)) * ps[1].vx / (2. * massaParticula)
+                ps[1].ay -= RHO * CD * ASection * (np.sqrt(ps[1].vx**2 + ps[1].vy**2 + ps[1].vz**2)) * ps[1].vy / (2. * massaParticula)
+                ps[1].az -= RHO * CD * ASection * (np.sqrt(ps[1].vx**2 + ps[1].vy**2 + ps[1].vz**2)) * ps[1].vz / (2. * massaParticula)
+
+            # Apply the drag force and integrate the simulation
             sim.additional_forces = arrasto
             sim.force_is_velocity_dependent = 1
             sim.integrate(passo)
-            
-            tempo+=passo
-            latA,lonA,altA = latM[j],lonM[j],altM[j]
-            X[j],Y[j],Z[j],Vx[j],Vy[j],Vz[j] =ps[1].x,ps[1].y,ps[1].z,ps[1].vx,ps[1].vy,ps[1].vz
-            latM[j],lonM[j],altM[j] = transprojCart.transform(ps[1].x,ps[1].y,ps[1].z)
 
-            if(((altM[j]/1000)<1)):
-                passo=0.00001/Vm
-            if ((altM[j]/1000)<5):
-                passo=0.2/Vm
-            if ((altM[j]/1000)<10):
-                passo=100/Vm
-            
+            # Update time and meteor's position and velocity
+            tempo += passo
+            latA, lonA, altA = latM[j], lonM[j], altM[j]
+            X[j], Y[j], Z[j], Vx[j], Vy[j], Vz[j] = ps[1].x, ps[1].y, ps[1].z, ps[1].vx, ps[1].vy, ps[1].vz
+            latM[j], lonM[j], altM[j] = transprojCart.transform(ps[1].x, ps[1].y, ps[1].z)
 
-        print(massaPont[j],latA,lonA,altA)
-        arquivo.write('  1-  '+str(tempo)+' g: '+str(lonA)+" , "+str(latA)+' , '+str(altA/1000.)+' @399 \n')
-    arquivo.close()
-    arquivoQueda.close()
+            # Adjust time step for low altitudes
+            if ((altM[j] / 1000) < 1):
+                passo = 0.00001 / Vm
+            if ((altM[j] / 1000) < 5):
+                passo = 0.2 / Vm
+            if ((altM[j] / 1000) < 10):
+                passo = 100 / Vm
+
+        # Write the final results for the meteor
+        print(massaPont[j], latA, lonA, altA)
+        file.write('  1-  ' + str(tempo) + ' g: ' + str(lonA) + " , " + str(latA) + ' , ' + str(altA / 1000.) + ' @399 \n')
+
+    # Close the output files
+    file.close()
+    fileFalling.close()
+
 
     ###################################################################################################################
-    #integracao pra tras
-    # Integração reversa até 1000 km de altitude (dados salvos em arquivos .out e .dat)
-    # Usada a massa em massaInt
+    # Reverse Integration
+    # Reverse integration up to 1000 km altitude (data saved in .out and .dat files)
+    # Using the mass in massaInt
 
-    for i in range (len(massaPont)):
-        X[i],Y[i],Z[i]=(X1[i]+X2[i])/2,(Y1[i]+Y2[i])/2,(Z1[i]+Z2[i])/2
-        Vx[i],Vy[i],Vz[i]=Vx1[i],Vy1[i],Vz1[i]
-        latM[i],lonM[i],altM[i] = transprojCart.transform(X[i],Y[i],Z[i])
+    # Initialize particle properties
+    for i in range(len(massaPont)):
+        X[i], Y[i], Z[i] = (X1[i] + X2[i]) / 2, (Y1[i] + Y2[i]) / 2, (Z1[i] + Z2[i]) / 2
+        Vx[i], Vy[i], Vz[i] = Vx1[i], Vy1[i], Vz1[i]
+        latM[i], lonM[i], altM[i] = transprojCart.transform(X[i], Y[i], Z[i])
 
-    arquivoCart=open((variablesPIM.directorystr+'/Cartesian.dat'),'w')
-    arquivoCoord=open((variablesPIM.directorystr+'/Coordinate.dat'),'w')
+    # Create output files for saving results
+    fileCart = open((variablesPIM.directorystr + '/Cartesian.dat'), 'w')
+    fileCoord = open((variablesPIM.directorystr + '/Coordinate.dat'), 'w')
 
-    arquivoCart.write("time(s) x y z vx vy vz \n")
-    arquivoCoord.write("time(s) vel alt(km) lon lat \n")
-    
-    tempo=0
-    passo=-5
-    j=massaPont.index(massaInt)
-    ASection=A[j]
+    fileCart.write("time(s) x y z vx vy vz \n")
+    fileCoord.write("time(s) vel alt(km) lon lat \n")
 
-    massaParticula=massaPont[j]
+    # Set the initial time and find the index of the mass in massaInt
+    tempo = 0
+    j = massaPont.index(massaInt)
+    ASection = A[j]
+    massaParticula = massaPont[j]
 
-    while altM[j]<1000e3:
+    # Perform reverse integration until altitude reaches 1000 km
+    while altM[j] < 1000e3:
         os.system('clear')
-        print(tempo,"altura atual (km): ",altM[j]/1000.)
-        print(i, flush=True)
-        
-        Vm=np.sqrt(Vx[j]**2+Vy[j]**2+Vz[j]**2)
-        
-        if ((altM[j]/1000)>150) and ((altM[j]/1000)<990):
-            passo=-10000/Vm
-        else:
-            passo=-2000/Vm
-            
-        strCart=str(str(tempo)+" "+str(X[j]/1000.)+" "+str(Y[j]/1000.)+" "+str(Z[j]/1000.)+" "+str(Vx[j]/1000.)+" "+
-                    str(Vy[j]/1000.)+" "+str(Vz[j]/1000.)+" \n")
-        arquivoCart.write(strCart)
-        arquivoCoord.write(str(str(tempo)+" "+str(Vm)+" "+str(altM[j]/1000)+" "+str(lonM[j])+" "+str(latM[j])+" \n"))
-        sim = rebound.Simulation()
-        sim.integrator = "ias15"
+        print(tempo, "current altitude (km): ", altM[j] / 1000.)
 
-        sim.units = ('m', 's', 'kg')
-        sim.add(m=5.97219e24,hash='earth')
-        meteor = rebound.Particle(m=massaPont[j],x=X[j],y=Y[j],z=Z[j],vx=Vx[j],vy=Vy[j],vz=Vz[j])
-        sim.add(meteor)
+        # Calculate atmospheric density (RHO) based on current altitude and location
+        RHO = calculateRHO(altM[j], latM[j], lonM[j])
 
-        ps=sim.particles
-        atmos = msise00.run(time=datetime(horaMeteoro.year,horaMeteoro.month,horaMeteoro.day,horaMeteoro.hour,horaMeteoro.minute,horaMeteoro.second), altkm=altM[j]/1000., glat=latM[j], glon=lonM[j])
-        RHO=(float(atmos['Total']))
-        def arrasto(reb_sim):
-                    ps[1].ax -= RHO*CD*ASection*(np.sqrt(ps[1].vx**2+ps[1].vy**2+ps[1].vz**2))*ps[1].vx/(2.*massaParticula)
-                    ps[1].ay -= RHO*CD*ASection*(np.sqrt(ps[1].vx**2+ps[1].vy**2+ps[1].vz**2))*ps[1].vy/(2.*massaParticula)
-                    ps[1].az -= RHO*CD*ASection*(np.sqrt(ps[1].vx**2+ps[1].vy**2+ps[1].vz**2))*ps[1].vz/(2.*massaParticula)
-        sim.additional_forces = arrasto
-        sim.force_is_velocity_dependent = 1
+        # Update particle position and velocity and get the time step
+        passo = updateParticle(sim, RHO, CD, ASection, massaParticula, j)
+
+        # Write Cartesian and Coordinate data to output files
+        strCart = str(tempo) + " " + str(X[j] / 1000.) + " " + str(Y[j] / 1000.) + " " + str(Z[j] / 1000.) + " " + str(
+            Vx[j] / 1000.) + " " + str(Vy[j] / 1000.) + " " + str(Vz[j] / 1000.) + " \n"
+        fileCart.write(strCart)
+        fileCoord.write(
+            str(tempo) + " " + str(Vm) + " " + str(altM[j] / 1000) + " " + str(lonM[j]) + " " + str(latM[j]) + " \n")
+
+        # Integrate the simulation with the calculated time step
         sim.integrate(passo)
 
-        tempo+=passo
-        X[j],Y[j],Z[j],Vx[j],Vy[j],Vz[j] =ps[1].x,ps[1].y,ps[1].z,ps[1].vx,ps[1].vy,ps[1].vz
-        latM[j],lonM[j],altM[j] = transprojCart.transform(ps[1].x,ps[1].y,ps[1].z)
+        # Update time, particle position, velocity, and location
+        tempo += passo
+        X[j], Y[j], Z[j], Vx[j], Vy[j], Vz[j] = ps[j].x, ps[j].y, ps[j].z, ps[j].vx, ps[j].vy, ps[j].vz
+        latM[j], lonM[j], altM[j] = transprojCart.transform(ps[j].x, ps[j].y, ps[j].z)
 
-    with open((variablesPIM.directorystr+'/FinalCartesian.dat'),'w') as f:
+    # Save the final Cartesian data to a file
+    with open((variablesPIM.directorystr + '/FinalCartesian.dat'), 'w') as f:
         f.write(strCart)
 
+    # Close the output files
+    fileCart.close()
+    fileCoord.close()
 
-    arquivoCart.close()
-    arquivoCoord.close()
     ############################################################################################################
-    # fazer arquivo com a trajetoria total do meteoro
-    ##
+    # Create a file with the total meteor trajectory
+    
     for line in reversed(list(open(variablesPIM.directorystr+'/coordinates.txt'))):
         print(line.rstrip())
         
     ################################################################################################################
-    #salvar os dados dos pontos de queda do meteorito e vai gerar ao mapa de queda (primeira integraçao para frente)
-    #   Análise dos pontos de queda e da integração reversa até 1000 km
-    # (usa os arquivos .out salvo nos procedimentos anteriores)
-    saida = pd.read_csv((variablesPIM.directorystr+'/saida.out'), sep='\s+',header=None)
-    excluir = [0,2,4,6,7,8]
-    saida.drop(saida.columns[excluir],axis=1,inplace=True)
-
-    saida.insert(0, "mass", "Any")
+    # Save data of meteorite impact points and analyze the impact points and reverse integration up to 1000 km
+    # (uses the .out files saved in previous procedures)   
 
 
-    saida['mass'] = massaPont
-    colunas = ['mass','time(s)','lon','lat']
-    saida.columns = colunas
+    # Read the output data from the first integration
+    output = pd.read_csv(variablesPIM.directorystr + '/saida.out', sep='\s+', header=None)
 
-    arquivo=open((variablesPIM.directorystr+'/data.txt'),'a')
-    arquivo.write(('\n \n Strewn Field: \n'))
-    arquivo.write(saida.to_string(index=False))
-    arquivo.write('\n \n')
-    arquivo.close()
+    # Remove unnecessary columns from the output data
+    columns_to_remove = [0, 2, 4, 6, 7, 8]
+    output.drop(output.columns[columns_to_remove], axis=1, inplace=True)
 
-    # referente a integraçao pra tras (qunto tempo ele estava da entrada da atmosfera até chegar oa ponto do meteoro/ instante q ele entrou na atmosfera)
+    # Add a "mass" column to the output data and set its values
+    output.insert(0, "mass", "Any")
+    output['mass'] = massaPont
+
+    # Rename columns for clarity
+    column_names = ['mass', 'time(s)', 'lon', 'lat']
+    output.columns = column_names
+
+
+    # Create and write the data to a text file
+    outputFile = open(variablesPIM.directorystr + '/data.txt', 'a')
+    outputFile.write('\n \n Strewn Field: \n')
+    outputFile.write(output.to_string(index=False))
+    outputFile.write('\n \n')
+    outputFile.close()
+
+    # Calculate the time of entry into the atmosphere
     with open(variablesPIM.directorystr+'/FinalCartesian.dat','r') as f:
-        ent=f.read()
-    fimTempoVoo=ent.index(" ")
-    tempoVoo=float(ent[0:fimTempoVoo])
-    tempoVooNum= timedelta(seconds=-tempoVoo)
-    print("tempo de Voo para",massaInt," kg =",tempoVooNum)
-    initialT=(horaMeteoro - tempoVooNum).strftime("%Y-%m-%d %H:%M:%S")
-    #finalT=(horaMeteoro - tempoVooNum+timedelta(seconds=1)).strftime("%Y-%m-%d %H:%M:%S")
-    print("hora de entrada: ",initialT)
+        entry = f.read()
+    endTimeFlight = entry.index(" ")
+    timeOfFlight = float(entry[0:endTimeFlight])
+    timeOfFlightNum = timedelta(seconds=-timeOfFlight)
+    
+    print("Flight time for", massaInt, "kg =", timeOfFlightNum)
+    initial_time = (horaMeteoro - timeOfFlightNum).strftime("%Y-%m-%d %H:%M:%S")
+    print("Entry time:", initial_time)
+   
+   
+    # Fall map (forward integration)
 
-    #mapa de queda (integraçao para frente)
+    # Add a 'kg' suffix to the 'mass' column
+    output['mass'] = output['mass'].astype(str) + " kg"
 
-    saida['mass'] = saida['mass'].astype(str) + " kg"
+    # Create a map centered at the midpoint of lat and lon
     map_osm = folium.Map(
-        location = [saida['lat'][saida.shape[0]//2], saida['lon'][saida.shape[0]//2]],
-        zoom_start = 14
+        location=[output['lat'][output.shape[0] // 2], output['lon'][output.shape[0] // 2]],
+        zoom_start=14
     )
-    map_osm
-    folium.Marker(
-        location=[P1lat,P1lon],
-        popup=folium.Popup('Initial Meteor',show=True),
-        icon=folium.map.Icon(color='blue')
-    ).add_to(map_osm)  
-    folium.Marker(
-        location=[P2lat,P2lon],
-        popup=folium.Popup('Final Meteor',show=True),
-        icon=folium.map.Icon(color='blue')
-    ).add_to(map_osm)  
 
-    for indice, row in saida.iterrows():
+    # Add markers for the initial and final meteor positions
+    folium.Marker(
+        location=[P1lat, P1lon],
+        popup=folium.Popup('Initial Meteor', show=True),
+        icon=folium.map.Icon(color='blue')
+    ).add_to(map_osm)
+
+    folium.Marker(
+        location=[P2lat, P2lon],
+        popup=folium.Popup('Final Meteor', show=True),
+        icon=folium.map.Icon(color='blue')
+    ).add_to(map_osm)
+
+    # Add markers for impact points with meteorite mass information
+    for _, row in output.iterrows():
         folium.Marker(
             location=[row["lat"], row["lon"]],
-            popup=folium.Popup(row['mass'],show=True),
+            popup=folium.Popup(row['mass'], show=True),
             icon=folium.map.Icon(color='yellow')
         ).add_to(map_osm)
-    map_osm.save(variablesPIM.directorystr+'/strewnField.html')
-    return
+
+    # Save the fall map to an HTML file
+    map_osm.save(variablesPIM.directorystr + '/strewnField.html')
+
 
