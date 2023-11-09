@@ -51,10 +51,10 @@ def check_existence(directory_path: str, extension: str) -> list:
     file_list = []
     for root, dirs, files in os.walk(directory_path):
         for file in files:
-            if extension in file:
+            if extension.lower() in file.lower():
                 file_list.append(os.path.join(root, file))
     if not file_list:
-        print("Error: There are no files '{extension}' extension.")
+        print(f"Error: There are no files with '{extension}' extension.")
         exit()
     else:
         return file_list

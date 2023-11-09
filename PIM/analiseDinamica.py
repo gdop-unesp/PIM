@@ -175,7 +175,7 @@ def runInParallel(args_list):
 
 directoriesList,dateList,optionList = askForDir()
 
-if verificationFiles == True:
+if verificationFiles(directoriesList):
     pass
 else: 
     print("We haven't verified the existence of your initial files. We will create them from the .XML files.")
