@@ -5,6 +5,8 @@ import variablesPIM
 import validationPIM  
 import warnings
 import os
+from pathlib import Path
+
 
 warnings.filterwarnings('ignore')
 
@@ -24,7 +26,7 @@ def convertToDictionary (cameraList, dirRun):
   """
 
   for file in cameraList:
-    with validationPIM.createFileRead(variablesPIM.directory.joinpath(dirRun), file) as f:            # Open files in read mode
+    with validationPIM.createFileRead(variablesPIM.directory.joinpath(directory).joinpath(dirRun), file) as f:            # Open files in read mode
       validationPIM.createDirIfDoesntExist(variablesPIM.directory,file[:-4])         # Create a directory for this integration
       data = validationPIM.createFileWrite(file[:-4],'Position.csv' )                     # Create file inside the directory with the positions
       data.write('name;fps;y;mo;d;h;m;s;lng;lat;alt\n')                              # Write the name of the variables in the file
@@ -80,11 +82,11 @@ def saveDataInList(cameraList, dirRun):
   dfP = []
   dfF = []
   for file in cameraList:
-    with validationPIM.createFileRead(variablesPIM.directory.joinpath(dirRun), file) as f:
-      namePosition = variablesPIM.directory.joinpath(file[:len(file[:-4])]).joinpath('Position.csv').resolve()
-      nameFrames = variablesPIM.directory.joinpath(file[:len(file[:-4])]).joinpath('Frames.csv').resolve()
-      dfPosition = pd.read_csv(namePosition, separator = ';')
-      dfFrames = pd.read_csv(nameFrames, separator = ';')
+    with validationPIM.createFileRead(variablesPIM.directory.joinpath(directory).joinpath(dirRun), file) as f:
+      namePosition = variablesPIM.directory.joinpath(directory).joinpath(file[:len(file[:-4])]).joinpath('Position.csv').resolve()
+      nameFrames = variablesPIM.directory.joinpath(directory).joinpath(file[:len(file[:-4])]).joinpath('Frames.csv').resolve()
+      dfPosition = pd.read_csv(namePosition, sep = ';')
+      dfFrames = pd.read_csv(nameFrames, sep = ';')
       dfP.append(dfPosition)
       dfF.append(dfFrames)
   print(dfF[0].info())
@@ -156,7 +158,7 @@ def writeFilesRun(df, dateM, option,dirRun):
   readFile = open(str(variablesPIM.directory.joinpath('standart.txt').resolve()))         # Open standard.txt file
   standard = readFile.read()                                                              # Read standard.txt file
   readFile.close()                                                                        # Close standard.txt file
-  FilesRun = validationPIM.createFileWrite(variablesPIM.directory, f'filesRun{dirRun}.txt')             # Open filesRun.txt file in write mode
+  FilesRun = validationPIM.createFileWrite(variablesPIM.directory.joinpath(directory), f'filesRun{dirRun}.txt')             # Open filesRun.txt file in write mode
   FilesRun.write("#comments lines #\n")                                                   # Writes in the filesRun.txt file
 
   for k in range(0,2):
@@ -225,16 +227,15 @@ def writeFilesRun(df, dateM, option,dirRun):
 
           
           fileName = nameCamera+".txt"
-          with validationPIM.createFileWrite(variablesPIM.directory, fileName) as infile:
+          with validationPIM.createFileWrite(variablesPIM.directory.joinpath(directory).joinpath(dirRun), fileName) as infile:
             infile.write(fileCamera)
 
-          shutil.copyfile(variablesPIM.directory.joinpath(fileName).resolve(),variablesPIM.directory.joinpath(dirRun).joinpath(fileName).resolve())
           FilesRun.write(fileName+"\n")
 
 
   FilesRun.write("#not delete this line #")
   FilesRun.close()
-  shutil.copyfile(variablesPIM.directory.joinpath(f'filesRun{dirRun}.txt').resolve(),variablesPIM.directory.joinpath(dirRun).joinpath("filesRun.txt").resolve())
+  shutil.copyfile(variablesPIM.directory.joinpath(directory).joinpath(f'filesRun{dirRun}.txt').resolve(),variablesPIM.directory.joinpath(directory).joinpath(dirRun).joinpath("filesRun.txt").resolve())
 
 def createFiles(dirRun,dateM,option):
   """
@@ -254,18 +255,20 @@ def createFiles(dirRun,dateM,option):
   Examples: createFiles('example_dir', '2023-04-28', 'auto')
 
   """
-  cameraList = validationPIM.check_existence(variablesPIM.directory.joinpath(dirRun).resolve(), '.XML')       # Checks the existence and lists '.XML' files  
+  variablesPIM.directory = Path(variablesPIM.directory)
+  print(variablesPIM.directory.joinpath(directory).joinpath(dirRun).resolve())
+  cameraList = validationPIM.check_existence(variablesPIM.directory.joinpath(directory).joinpath(dirRun).resolve(), '.XML')       # Checks the existence and lists '.XML' files  
   print(cameraList)
   convertToDictionary(cameraList, dirRun)         # Convert data to a dictionary and pass this data to position.csv and frames.csv files
   dfP, dfF = saveDataInList(cameraList, dirRun)   # Save the data in list
   dfR = saveDataInVariables(dfP, dfF)     # Save data of list in variables
   df = dfR
-  validationPIM.createDirIfDoesntExist(variablesPIM.directory, dirRun)                    # Creates a directory for the analysis if it does not exist
-  df.to_excel(variablesPIM.directory.joinpath(dirRun).joinpath(dirRun+".xls").resolve())  # Save a sheets in directory
+  validationPIM.createDirIfDoesntExist(variablesPIM.directory.joinpath(directory), dirRun)                    # Creates a directory for the analysis if it does not exist
+  df.to_excel(variablesPIM.directory.joinpath(directory).joinpath(dirRun).joinpath(dirRun+".xls").resolve())  # Save a sheets in directory
   writeFilesRun(df, dateM, option,dirRun)                                                 # Writes the variables in a copy of a model file
   print(f'The initial files for the integration of {dirRun} have been created.')  
 
-def multiCreate(directoriesList,dateList,optionList):
+def multiCreate(directoriesList,dateList,optionList, directoryName):
   """
   This function receives three lists, containing directories, dates, and options. It loops through each element in the lists, calling the createFiles function for each element.
 
@@ -289,5 +292,8 @@ Examples:
 
     multiCreate(directories, dates, options)
   """
+  global directory
+  directory = directoryName
+  
   for i in range(len(directoriesList)):
     createFiles(directoriesList[i],dateList[i],optionList[i])

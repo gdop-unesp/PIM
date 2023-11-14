@@ -49,15 +49,35 @@ def check_existence(directory_path: str, extension: str) -> list:
         If there are no files with the specified extension in the directory, the function will print an error message and exit the program.
     """
     file_list = []
+    print(directory_path)
+    files = os.listdir(directory_path)
+    files = [file for file in files if file.lower().endswith(extension.lower())]
+    print(f"Arquivos {extension} encontrados: {files}")
+
     for root, dirs, files in os.walk(directory_path):
+        print(files)
         for file in files:
-            if extension.lower() in file.lower():
+            if extension.upper() in file.upper():
                 file_list.append(os.path.join(root, file))
     if not file_list:
-        print(f"Error: There are no files with '{extension}' extension.")
-        exit()
+        raise FileNotFoundError(f"No files found with '{extension}' extension.")
     else:
         return file_list
+
+
+def check_directory_existence(directory_path):
+    """
+    Verifies the existence of a directory.
+
+    Args:
+        directory_path (str): The path of the directory to be checked.
+
+    Returns:
+        bool: True if the directory exists, False otherwise.
+    """
+    return os.path.exists(directory_path)
+
+
 
 def createFileWrite(fileDirectory, nome):
     """
@@ -138,7 +158,14 @@ def fileToList(file):
     try:
         with open(file) as f:
             content = f.readlines()
-        content = [x.rstrip("\n") for x in content]
+        #content = [x.rstrip("\n") for x in content]
         return content
     except OSError:
         raise OSError("Error: Can't open and read the file.")
+
+
+def hasExtension(fileList, extension):
+    for fileName in fileList:
+        if fileName.endswith(extension):
+            return True
+    return False

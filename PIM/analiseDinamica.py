@@ -118,8 +118,10 @@ def askForDir():
     """
     directoriesFile = input("Insert the .txt file containing the list of meteors (directories) to be analyzed:  ")
     separator = input("Insert the separator character between the name, data and horary: ")
-    data = validationPIM.fileToList(directoriesFile+'.txt')
+
     try:
+        os.chdir(variables.directory)
+        data = validationPIM.fileToList(directoriesFile+'.txt')
         data = [i.split(separator) for i in data]
         directoriesList = [i[0] for i in data]
         dateList = [i[1].split('/')+i[2].split(':') for i in data]
@@ -134,30 +136,39 @@ def askForDir():
     print(directoriesList, dateList, optionList)
     return directoriesList, dateList, optionList
     
-def verificationFiles(directoriesFile):
-    
+
+def verificationFiles(directoriesFiles, directoryName):
     filesRun = "filesRun.txt"
-    
-    with open(directoriesFile, "r") as f:
-        nameDirs = f.read().splitlines()
+    standardFile = "standard.txt"
+    xlsExtension = ".xls"
 
-    for nameDir in nameDirs:
-        if not os.path.exists(nameDir) and os.path.isdir(nameDir):
-            print(f"The directory '{nameDir}' doesn't exists. Please remove it from the list.")
+    if not validationPIM.check_directory_existence(directoryName):
+        print(f"The directory '{directoryName}' doesn't exist or is not a directory. So, we don't have the files with essential information.")
+        exit()
+
+    os.chdir(directoryName)
+    print(os.getcwd())
+
+    for directory in directoriesFiles:
+        if not validationPIM.check_directory_existence(directory) or not os.path.isdir(directory):
+            print(f"The directory '{directory}' doesn't exist or is not a directory.")
             return False
 
-        if not os.path.exists(os.path.join(os.getcwd(), nameDir, filesRun)):
-            print(f"The file '{filesRun}' doesn't exists.")
+        meteorFiles = [f for f in os.listdir(directory)]
+   
+        if not validationPIM.hasExtension(meteorFiles,".xls"):
             return False
-            
-        with open(filesRun, "r") as f:
-            fileNames = f.read().splitlines()
-            
-        for fileName in fileNames:
-            if not os.path.exists(fileName):
-                print(f"The file '{fileName}' listed in '{filesRun}' of '{nameDir}' doesn't exist.")
-                return False
+        
+        if not "filesRun.txt" in meteorFiles:
+            return False
+        
+        if not "standard.txt" in meteorFiles:
+            return False
+
     return True
+
+
+
 
 def runInParallel(args_list):
     # Create a process pool
@@ -173,13 +184,17 @@ def runInParallel(args_list):
     return results
 ##########################################################################################################
 
+
 directoriesList,dateList,optionList = askForDir()
 
-if verificationFiles(directoriesList):
+directoryName = input(f"Enter the name of the folder where the meteors folders should be verified: ")
+
+
+if verificationFiles(directoriesList, directoryName):
     pass
 else: 
     print("We haven't verified the existence of your initial files. We will create them from the .XML files.")
-    createFileInput.multiCreate(directoriesList,dateList,optionList)
+    createFileInput.multiCreate(directoriesList,dateList,optionList, directoryName)
 
 #continueIntegration ()
 
