@@ -160,8 +160,9 @@ def fileToList(file):
             content = f.readlines()
         #content = [x.rstrip("\n") for x in content]
         return content
-    except OSError:
-        raise OSError("Error: Can't open and read the file.")
+    except OSError as e:
+        print("Error: Can't open and read the file.")
+        return None
 
 
 def hasExtension(fileList, extension):

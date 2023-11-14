@@ -6,6 +6,7 @@ import validationPIM
 import warnings
 import os
 import multiprocessing
+from pathlib import Path
 
 
 warnings.filterwarnings('ignore')
@@ -28,15 +29,18 @@ def dataSearch():
     
     # Create an empty list to store the files to run
     filesToRun = []
+    
+    # Convert variables.directorystr to a Path object
+    directory_path = Path(variables.directorystr)
 
     # List all files in the directory
-    for file in variables.directorystr.iterdir():
+    for file in directory_path.iterdir():
         if file.is_file() and file.name.startswith("filesRun") and file.name.endswith(".txt"):
             with file.open() as readFile:
                 lines = readFile.readlines()
                 filesToRun.extend(lines)
 
-    readFile = open(variables.directorystr.joinpath('filesRun'))
+    readFile = open(directory_path.joinpath('filesRun'))
     filesToRun = readFile.readlines()
     readFile.close()
     print(filesToRun)
@@ -115,24 +119,38 @@ def askForDir():
         Insert the separator character between the name, data and horary: |
         ['meteor1', 'meteor2'], [[2022, 5, 1, 12, 0, 0], [2022, 5, 2, 18, 0, 0]], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-    """
     directoriesFile = input("Insert the .txt file containing the list of meteors (directories) to be analyzed:  ")
     separator = input("Insert the separator character between the name, data and horary: ")
+    """
+    directoriesFile = 'meteors'
+    separator =';'
 
     try:
-        os.chdir(variables.directory)
         data = validationPIM.fileToList(directoriesFile+'.txt')
+        
+        if not data:
+            print("Error: The file is empty or could not be read.")
+            return  
+
         data = [i.split(separator) for i in data]
+        
         directoriesList = [i[0] for i in data]
-        dateList = [i[1].split('/')+i[2].split(':') for i in data]
-        dateList = [[int(j) for j in i]for i in dateList]
-        options = [i[3].split(':') for i in data]
-        options = [[int(j) for j in i]for i in options]
-        optionList = []
-        [optionList.extend(i) for i in options]
-    except:
+        
+        dateList = [
+            [
+                int(component) if component.isdigit() else component 
+                for component in (i[1].replace('/', ' ').replace(':', ' ').split())
+            ] 
+            for i in data
+        ]
+        
+        options = [i[2] for i in data]
+        optionList = [int(option) for option in options]
+                
+    except Exception as e:
         print("Error: unable to access meteor information. Please review the file. ")
-        return
+        return 
+    
     print(directoriesList, dateList, optionList)
     return directoriesList, dateList, optionList
     
@@ -182,6 +200,12 @@ def runInParallel(args_list):
     pool.join()
 
     return results
+
+def startIntegration(directoriesList, directoryName):
+    for directory in directoriesList:
+        
+        return
+        
 ##########################################################################################################
 
 
@@ -196,9 +220,8 @@ else:
     print("We haven't verified the existence of your initial files. We will create them from the .XML files.")
     createFileInput.multiCreate(directoriesList,dateList,optionList, directoryName)
 
-#continueIntegration ()
+continueIntegration ()
 
-#filesToRun = dataSearch()
 
-#integration(filesToRun)
+startIntegration(directoriesList, directoryName)
  
