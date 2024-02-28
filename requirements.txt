@@ -8,7 +8,7 @@ sympy==1.11.1
 tqdm==4.64.1
 rebound==3.21.0
 folium==0.13.0
-IPython==8.6.0
+IPython==8.10.0
 astropy==5.2.1
 datetime==4.7
 numpy==1.23.4
