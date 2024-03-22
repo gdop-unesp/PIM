@@ -3,7 +3,7 @@ import os
 import variablesPIM  
 
 
-def createDirIfDoesntExist(baseDirectory: str, directory: str) -> None:
+def createDirIfDoesntExist(baseDirectory, directory: str) -> None:
     """
     Creates a new directory at the specified path if it doesn't already exist.
 
@@ -21,9 +21,9 @@ def createDirIfDoesntExist(baseDirectory: str, directory: str) -> None:
         This function checks if a directory exists at the specified path before attempting to create a new directory.
         If a directory with the specified name already exists, the function does nothing.
     """
-    if not pathlib.Path(baseDirectory.joinpath(directory)).is_dir():
-        print("Creating directory")
-        os.mkdir(str(baseDirectory.joinpath(directory).resolve()))
+    if not pathlib.Path(os.path.join(baseDirectory,directory)).is_dir():
+        print(f'Creating directory {directory}')
+        os.mkdir(str(os.path.join(baseDirectory,directory)))
    
 def check_existence(directory_path: str, extension: str) -> list:
     """

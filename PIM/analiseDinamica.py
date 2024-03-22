@@ -46,30 +46,6 @@ def dataSearch():
     print(filesToRun)
     return filesToRun
 
-def integration(filesToRun):
-    """
-    Function integration takes in a list filesToRun and processes each line of the list that does not begin with # or a new line character. It removes the new line character from the end of each line and runs two simulation functions PIMR.PIMRun() and PIMT.PIMTrajectory() on each processed line.
-
-    Parameters:
-
-        filesToRun: a list of strings representing the files to be simulated.
-
-    Returns: None
-
-    Raises: None
-
-    Example:
-
-        files = ['# File names to run simulation\n', 'run1\n', 'run2\n', '\n']
-        integration(files)
-    """
-    j=0
-    for i,text in enumerate(filesToRun):
-        if (text[0] != '#' and text[0] != '\n'):
-            text = text[:-1]            # remove \n
-            runInParallel(text)           # atmosphere (ground and then up to 1000 km altitude)
-            PIMTrajectory.PIMTrajectory(text)    # space (from 1000 km altitude)
-
 def continueIntegration ():
     """
     This function prompts the user to decide whether to proceed with the integration process or not. It will keep asking for input until the user enters either "yes" or "no".
@@ -154,7 +130,6 @@ def askForDir():
     print(directoriesList, dateList, optionList)
     return directoriesList, dateList, optionList
     
-
 def verificationFiles(directoriesFiles, directoryName):
     filesRun = "filesRun.txt"
     standardFile = "standard.txt"
@@ -185,33 +160,54 @@ def verificationFiles(directoriesFiles, directoryName):
 
     return True
 
+def readFileToList(fileIncomplete, directory):
+    try:
+        baseDirectory = Path(directory).resolve()
+        fileComplete = baseDirectory / fileIncomplete
+        
+        with open(fileComplete, 'r') as file:
+            lines = [line.strip() for line in file.readlines()]
+            updatedFiles = []
+            for line in lines:
+                file_path = baseDirectory.joinpath(line)
+                updatedFiles.append(str(file_path))
+            return updatedFiles[1:-1]
+           
+    except FileNotFoundError as e:
+        print(f"Error: {e}. The file '{fileComplete}' was not found.")
+        return []
+    except Exception as e:
+        print(f"Error: {e}. An unexpected error occurred while reading the file.")
+        return []
 
-
-
-def runInParallel(args_list):
+def runInParallel(argsList):
     # Create a process pool
     pool = multiprocessing.Pool()
 
     # Use the pool's map method to apply the function to the arguments in parallel
-    results = pool.map(PIMRun.PIMRun, args_list)
+    pool.map(PIMRun.PIMRun, argsList)
 
     # Close the pool after completion
     pool.close()
     pool.join()
 
-    return results
+def runInSeq(argsList, directory):
+    for file in argsList:
+        path = os.path.join(directoryName, directory)
+        PIMRun.PIMRun(file, path)
 
-def startIntegration(directoriesList, directoryName):
+def startIntegration(directoriesList, directoryName): 
     for directory in directoriesList:
-        
-        return
+        file = 'filesRun.txt'
+        filesList = readFileToList(file, directory)        
+        runInSeq(filesList, directory)
         
 ##########################################################################################################
 
 
 directoriesList,dateList,optionList = askForDir()
 
-directoryName = input(f"Enter the name of the folder where the meteors folders should be verified: ")
+directoryName = 'Meteors' #input(f"Enter the name of the folder where the meteors folders should be verified: ")
 
 
 if verificationFiles(directoriesList, directoryName):
