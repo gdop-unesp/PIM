@@ -13,7 +13,6 @@
 # Index
 
 * [Title and Cover Image](#title-and-cover-image)
-* [Badges](#badges)
 * [Project Description](#project-description)
 * [Technologies Used](#technologies-used)
 * [Features](#features-and-application-demo)
