@@ -1,7 +1,7 @@
 <h1 align="center"> PIM - Programa Integrador de Meteoros </h1>
 
 <p align="center">
-  <img src="Logo4.png" alt="alt text" />
+  <img src="Arquivos/Logo4.png" alt="alt text" />
 </p>
 
 ![license](https://img.shields.io/badge/license-GPLv3-blue)
