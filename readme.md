@@ -130,7 +130,7 @@ Wind data clustering graphs.
 
 `Wind Table Generator`
 
-Generated file: windTable.csv (Arquivos/windTable.csv)
+Generated file: windTable.csv
 
 Columns in the result table:
 
@@ -201,7 +201,7 @@ This project is licensed under the GNU General Public License v3.0 (GPLv3).
 
 You are free to use, modify, and distribute this software, provided that you preserve this license in any copies or derivative works.
 
-For more details, see the [GPLv3 license](Arquivos/LICENSE.txt). 
+For more details, see the [GPLv3 license](LICENSE.txt). 
 
 
 
