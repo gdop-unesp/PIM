@@ -91,28 +91,28 @@ Excel spreadsheets with paired data.
 
 
   <p align="center">
-  <img src="0.png" alt="alt text" />
+  <img src="Arquivos/0.png" alt="alt text" />
   </p>
   <p align="center">
-  <img src="1.jpeg" alt="alt text" />
+  <img src="Arquivos/1.jpeg" alt="alt text" />
   </p>
   <p align="center">
-  <img src="2.jpeg" alt="alt text" />
+  <img src="Arquivos/2.jpeg" alt="alt text" />
   </p>
     <p align="center">
-  <img src="3.jpeg" alt="alt text" />
+  <img src="Arquivos/3.jpeg" alt="alt text" />
   </p>
     <p align="center">
-  <img src="4.jpeg" alt="alt text" />
+  <img src="Arquivos/4.jpeg" alt="alt text" />
   </p>
     <p align="center">
-  <img src="5.jpeg" alt="alt text" />
+  <img src="Arquivos/5.jpeg" alt="alt text" />
   </p>
     <p align="center">
-  <img src="6.jpeg" alt="alt text" />
+  <img src="Arquivos/6.jpeg" alt="alt text" />
   </p>
     <p align="center">
-  <img src="7+.jpeg" alt="alt text" />
+  <img src="Arquivos/7+.jpeg" alt="alt text" />
   </p>
   
 
@@ -125,12 +125,12 @@ Spatial dynamics simulations.
 Wind data clustering graphs.
 
    <p align="center">
-  <img src="8.png" alt="alt text" />
+  <img src="Arquivos/8.png" alt="alt text" />
   </p>
 
 `Wind Table Generator`
 
-Generated file: windTable.csv
+Generated file: windTable.csv (Arquivos/windTable.csv)
 
 Columns in the result table:
 
@@ -201,7 +201,7 @@ This project is licensed under the GNU General Public License v3.0 (GPLv3).
 
 You are free to use, modify, and distribute this software, provided that you preserve this license in any copies or derivative works.
 
-For more details, see the [GPLv3 license](LICENSE.txt). 
+For more details, see the [GPLv3 license](Arquivos/LICENSE.txt). 
 
 
 
