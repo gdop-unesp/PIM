@@ -1,0 +1,701 @@
+import subprocess
+
+# Libraries for file path and file manipulation
+import pathlib
+import os
+from os.path import exists
+import shutil
+
+# Libraries for numerical data and table manipulation
+import numpy as np
+import pandas as pd
+
+# Library for plotting/visualization
+import matplotlib.pyplot as plt
+
+# Library for reading and manipulating XML files
+import xml.etree.ElementTree as ET
+!pip install xmltodict
+import xmltodict
+
+# Library for handling Excel files (.xls, .xlsx)
+!pip install xlwt
+import xlwt
+
+# Library for geospatial data manipulation
+from bs4 import BeautifulSoup
+!pip install geopandas
+import geopandas as gpd
+from shapely.geometry import Point, Polygon
+
+# Library for reading geospatial files (shapefiles, etc.)
+!pip install fiona
+import fiona
+
+# Library for date and time manipulation
+from dateutil.parser import parse
+import xlwt
+
+# Define the current directory as a string
+dirGr = str(pathlib.Path().resolve())+'/'
+
+!pip install PyAstronomy
+from PyAstronomy import pyasl
+import matplotlib.pylab as plt
+import datetime
+
+import numpy as np
+
+def convEqToHor(y : int, m : int, d : int, ho : int, mi : int, se : int, alt : float, lon : float, lat : float, ra : float, dec : float) -> tuple[float , float]:
+  """
+    Converts equatorial coordinates (Right Ascension and Declination) to
+    horizontal coordinates (Azimuth and Altitude) for a given date, time,
+    and observer's location.
+
+    This function uses the PyAstronomy library to perform the conversion,
+    returning the corresponding azimuth and altitude of a celestial object.
+
+    Args:
+        y (int): Year.
+        m (int): Month.
+        d (int): Day.
+        ho (int): Hour.
+        mi (int): Minute.
+        se (int): Second.
+        alt (float): Observer's altitude in kilometers.
+        lon (float): Observer's longitude in degrees.
+        lat (float): Observer's latitude in degrees.
+        ra (float): Right Ascension of the object in degrees.
+        dec (float): Declination of the object in degrees.
+
+    Returns:
+            tuple:
+            az (float): Azimuth of the object in degrees.
+            alt (float): Altitude of the object in degrees.
+    """
+  import datetime
+  jd = datetime.datetime(y, m, d,ho,mi,se)
+  jds = pyasl.jdcnv(jd)
+  alti, az, ha = pyasl.eq2hor(jds,ra,dec, lon=lon, lat=lat, alt=alt*1000)
+  return az[0],alti[0]
+  print (convEqToHor.__doc__)
+
+import os
+
+def listar_arquivos_xml(dirGr : str) -> list[str]:
+    """
+    Parameters:
+    dirGr (str): Path to the directory where the XML files are located.
+
+    Returns:
+    list: List containing the names of the XML files in the directory, sorted in descending order.
+
+    """
+    # Get the list of files in the specified directory
+    arq = os.listdir(dirGr)
+
+    # Initialize the list to store the XML files
+    listaCamera = []
+
+    # Filters files to include only those with the '.XML' extension
+    for i in arq:
+        if '.XML' in i:
+            listaCamera.append(i)
+
+    # Sort the list in descending order
+    listaCamera.sort(reverse=True)
+
+    # Returns the sorted list
+    return listaCamera
+
+dirGr = "/home/felipe/Desktop/TG"
+arquivos_xml = listar_arquivos_xml(dirGr)
+print(arquivos_xml)
+
+import xmltodict
+
+def processar_arquivos_xml(dirGr : str, listaCamera : list [str]) -> dict[str, str]:
+    """
+    dirGr (str): Path to the directory where the XML files are located.
+    listaCamera (list): List containing the names of the XML files to be processed.
+
+    Returns:
+    dict: A dictionary with the camera name as the key and the frame number where a 'flare' event occurred as the value.
+
+    """
+    flare = dict()
+
+    for arq in listaCamera:
+        print(arq)
+
+        # Opens the XML file and processes the data
+        with open(dirGr + arq, 'r') as f:
+            dados = open(dirGr + arq[:-3] + 'Posicao.csv', 'w')
+            dados.write('name;fps;y;mo;d;h;m;s;lng;lat;alt\n')
+
+            dadosFrame = open(dirGr + arq[:-3] + 'Frames.csv', 'w')
+            dadosFrame.write('time;fAbs;fno;hour;ev;az;ra;dec\n')
+
+            my_dict = xmltodict.parse(f.read())
+
+            # Extract data from XML file
+            fps = float(my_dict['ufoanalyzer_record']['@fps'])
+            interlaced = int((my_dict['ufoanalyzer_record']['@interlaced']))
+            fps = fps if interlaced == 0 else 2 * fps
+            y = my_dict['ufoanalyzer_record']['@y']
+            mo = my_dict['ufoanalyzer_record']['@mo']
+            d = my_dict['ufoanalyzer_record']['@d']
+            h = my_dict['ufoanalyzer_record']['@h']
+            m = my_dict['ufoanalyzer_record']['@m']
+            s = my_dict['ufoanalyzer_record']['@s']
+            lng = my_dict['ufoanalyzer_record']['@lng']
+            lat = my_dict['ufoanalyzer_record']['@lat']
+            alt = my_dict['ufoanalyzer_record']['@alt']
+            name = my_dict['ufoanalyzer_record']['@lid'].strip()
+
+            # Writes position data to CSV file
+            dados.write(f'{name};{fps};{y};{mo};{d};{h};{m};{s};{lng};{lat};{alt}')
+
+            # Processes the frames
+            listaFrames = my_dict['ufoanalyzer_record']['ua2_objects']['ua2_object']['ua2_objpath']['ua2_fdata2']
+            frame0 = int(listaFrames[0]['@fno'])
+            time = 0.0
+            for frame in listaFrames:
+                frameAbsoluto = int(frame['@fno']) - frame0
+                time = 1 / fps * frameAbsoluto
+                declin = frame['@dec'].strip()
+
+                if declin[-1:] == 'F':
+                    declin = declin[:-1]
+                    flare[name] = frame['@fno'].strip()
+                    print(flare, declin)
+
+                declin = float(declin)
+                ra = float(frame['@ra'].strip())
+                azimute, altura = convEqToHor(int(y), int(mo), int(d), int(h), int(m), int(float(s)), float(alt) / 1000, float(lng), float(lat), ra, declin)
+                azimute, altura = str(azimute), str(altura)
+                declin = str(declin)
+
+                # Writes frame data to CSV file
+                a = f'{y}-{mo}-{d} {h}:{m}:{s}'
+                dadosFrame.write(f'{time:.2f};{frameAbsoluto};{frame["@fno"]};{a};{altura};{azimute};{frame["@ra"]};{declin}\n')
+
+            print(alt)
+
+            # Closes data files
+            dados.close()
+            dadosFrame.close()
+
+    return flare
+
+dirGr = "/home/felipe/Desktop/TG/"
+listaCamera = ['vulcano2(2).XML', 'turrialba(3).XML', 'sanRamon.XML', 'sanJose.XML', 'queops(1).XML', 'heredia2.XML', 'heredia1(1).XML']  # Lista com os arquivos XML
+
+# Call the function
+flare_dict = processar_arquivos_xml(dirGr, listaCamera)
+
+# Prints the dictionary of flares found
+print(flare_dict)
+
+import pandas as pd
+
+def load_camera_data(file_list : str, base_dir : str)-> tuple[str , str]:
+    """
+    Loads and processes position and frame data for a list of camera files.
+
+    For each file in the given list:
+    - Reads a corresponding position CSV file (with '.Posicao.csv' extension).
+    - Reads a corresponding frame CSV file (with '.Frames.csv' extension).
+    - Converts 'hour' column in the frame data to proper datetime values by adding
+      'time' (in seconds) as a timedelta to the first timestamp.
+
+    Parameters:
+    ----------
+    file_list : list of str
+        List of base filenames (without extensions) to process.
+    base_dir : str
+        Directory path where the files are located.
+
+    Returns:
+    -------
+    tuple of lists:
+        - List of pandas DataFrames with position data.
+        - List of pandas DataFrames with frame data.
+    """
+    position_dataframes = []
+    frame_dataframes = []
+
+    for filename in file_list:
+        with open(base_dir + filename, 'r'):
+            pos_file = filename.rsplit('.', 1)[0] + '.Posicao.csv'
+            frame_file = filename.rsplit('.', 1)[0] + '.Frames.csv'
+
+            df_pos = pd.read_csv(base_dir + pos_file, sep=';')
+            df_frame = pd.read_csv(base_dir + frame_file, sep=';')
+
+            df_frame['hour'] = pd.to_datetime(df_frame['hour'])
+            df_frame['hour'] = df_frame['hour'].iloc[0] + pd.to_timedelta(df_frame['time'], unit='S')
+
+            position_dataframes.append(df_pos)
+            frame_dataframes.append(df_frame)
+
+    return position_dataframes, frame_dataframes
+
+# Example usage
+dfP, dfF = load_camera_data(listaCamera, dirGr)
+
+# Display examples
+display(dfP[2])
+display(dfF[0])
+print(dfF[0].info())
+
+import pandas as pd
+
+def generate_flare_dataframe(camera_data : List[Dict[str, List[float]]], flare_dataframes : List[pd.DataFrame], flare_id_map : Dict[str, int], instants=None) -> pd.DataFrame:
+    """
+    Generates a DataFrame summarizing camera observations of flare events at multiple time offsets before each flare.
+
+    For each camera and each specified time offset, the function retrieves:
+    - The position (azimuth, elevation, right ascension, declination) at the offset before the flare.
+    - The position at the flare moment.
+    - The time difference (duration) between these two moments.
+    - A formatted time string showing the interval.
+
+    Parameters
+    ----------
+    camera_data : list of dict
+        List of dictionaries with each camera's metadata (must include 'name', 'lat', 'lng', and 'alt' keys).
+
+    flare_dataframes : list of pd.DataFrame
+        List of DataFrames containing observational data for each camera, including 'fno', 'time', 'az', 'ev',
+        'ra', 'dec', and 'hour'.
+
+    flare_id_map : dict
+        Mapping of camera names to flare IDs (used to find the correct flare event in each DataFrame).
+
+    instants : list of float, optional
+        Time offsets (in seconds) before the flare at which to extract position data.
+        Defaults to [0.1, 0.25, 0.5].
+
+    Returns
+    -------
+    df_result : pd.DataFrame
+        A DataFrame containing observation data per camera and time offset, including position, duration,
+        UTC timestamps, and a formatted time range.
+    """
+    if instants is None:
+        instants = [0.1, 0.25, 0.5]
+
+    df_result = pd.DataFrame(columns=[
+        'camera', 'lat', 'lon', 'alt', 'dur',
+        'azIni', 'elIni', 'azFin', 'elFin',
+        'raIni', 'decIni', 'raFin', 'decFin',
+        'hourA', 'hourB'
+    ])
+
+    for offset in instants:
+        for i, cam in enumerate(camera_data):
+            cam_name = cam['name'][0]
+            flare_id = int(flare_id_map[cam_name])
+
+            df_flare = flare_dataframes[i].loc[flare_dataframes[i]['fno'] == flare_id]
+            flare_time = float(df_flare['time'].iloc[0])
+            pre_flare_time = flare_time - offset if flare_time > offset else 0
+
+            camera_id = f"{cam_name}_{offset:.2f}"
+            lat = cam['lat'][0]
+            lon = cam['lng'][0]
+            alt = cam['alt'][0]
+
+            if pre_flare_time == 0:
+                az_ini = flare_dataframes[i]['az'].iloc[0]
+                el_ini = flare_dataframes[i]['ev'].iloc[0]
+                ra_ini = flare_dataframes[i]['ra'].iloc[0]
+                dec_ini = flare_dataframes[i]['dec'].iloc[0]
+                duration = flare_time
+                hour_a = flare_dataframes[i]['hour'].iloc[0]
+            else:
+                row = flare_dataframes[i].iloc[
+                    (flare_dataframes[i]['time'] - pre_flare_time).abs().argsort()[:1]
+                ]
+                az_ini = row['az'].values[0]
+                el_ini = row['ev'].values[0]
+                ra_ini = row['ra'].values[0]
+                dec_ini = row['dec'].values[0]
+                duration = flare_time - row['time'].values[0]
+                hour_a = row['hour'].values[0]
+
+            az_fin = df_flare['az'].iloc[0]
+            el_fin = df_flare['ev'].iloc[0]
+            ra_fin = df_flare['ra'].iloc[0]
+            dec_fin = df_flare['dec'].iloc[0]
+            hour_b = df_flare['hour'].iloc[0]
+
+            df_result.loc[len(df_result)] = [
+                camera_id.strip(), lat, lon, alt, duration,
+                az_ini, el_ini, az_fin, el_fin,
+                ra_ini, dec_ini, ra_fin, dec_fin,
+                hour_a, hour_b
+            ]
+
+    # Convert altitude from meters to kilometers
+    df_result['alt'] = df_result['alt'] / 1000.0
+
+    # Add a column with formatted time string: 'HH:MM:SS -> HH:MM:SS'
+    def format_datastring(row):
+        try:
+            hA = pd.to_datetime(row['hourA']).strftime('%H:%M:%S')
+            hB = pd.to_datetime(row['hourB']).strftime('%H:%M:%S')
+            return f"{hA} -> {hB}"
+        except Exception:
+            return "Invalid"
+
+    df_result['datastring'] = df_result.apply(format_datastring, axis=1)
+
+    return df_result
+
+
+custom_instants = [0.25]
+dfR = generate_flare_dataframe(dfP, dfF, flare_dict, instants=custom_instants)
+display(dfR)
+
+import pandas as pd
+
+def configure_event_parameters(df_result, show_dataframe=True) -> Dict[str, Union[str, int, List[int], pd.DataFrame]]:
+    """
+    Configures file paths and physical parameters for a meteor flare event,
+    and optionally displays the resulting DataFrame.
+
+    This function sets up key parameters such as directory paths, event metadata,
+    and physical integration settings (e.g., density, time steps, mass). It is
+    typically used before exporting results or running simulation/modeling routines.
+
+    Parameters
+    ----------
+    df_result : pd.DataFrame
+        The DataFrame containing processed meteor flare observations (e.g., dfR).
+
+    show_dataframe : bool, optional
+        Whether to display the DataFrame in the notebook/output (default is True).
+
+    Returns
+    -------
+    config : dict
+        A dictionary containing all configuration variables, including:
+        - 'dirGr2'       : Base output directory
+        - 'dirRun'       : Subdirectory for this event
+        - 'dateM'        : List with [YYYY, MM, DD, HH, mm, SS]
+        - 'opcao'        : Integer flag for method selection
+        - 'densMeteor'   : Meteor density as a string
+        - 'tInt'         : Integration start time (string)
+        - 'tIntStep'     : Integration step (string)
+        - 'massaInt'     : Meteor mass estimate (string)
+        - 'df'           : The passed DataFrame
+
+    Example
+    -------
+    >>> config = configure_event_parameters(dfR)
+    >>> print(config['dirRun'])
+    'costaRica2019FlareA/'
+    """
+    dirGr2 = '/home/felipe/Desktop/TG/'
+    dirRun = 'costaRica2019FlareA/'
+    dateM = [2019, 4, 24, 3, 7, 24]
+    opcao = 3
+    densMeteor = '2.2e-3'
+    tInt = '-500'
+    tIntStep = '-0.01'
+    massaInt = '250'
+
+    df = df_result
+
+    if show_dataframe:
+        display(df)
+
+    return {
+        'dirGr2': dirGr2,
+        'dirRun': dirRun,
+        'dateM': dateM,
+        'opcao': opcao,
+        'densMeteor': densMeteor,
+        'tInt': tInt,
+        'tIntStep': tIntStep,
+        'massaInt': massaInt,
+        'df': df
+    }
+
+config = configure_event_parameters(dfR)
+
+# Access values, for example:
+print("Directory:", config['dirGr2'])
+print("Density:", config['densMeteor'])
+
+import os
+import pandas as pd
+
+def save_event_data(df : pd.DataFrame, dirGr2 : str, dirRun : str, standard_filename : str="standard.txt") -> standard [str]:
+    """
+    Saves the processed meteor event DataFrame to an Excel file, creates necessary directories,
+    and reads a standard configuration file from disk.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame containing meteor observation results (e.g., dfR).
+
+    dirGr2 : str
+        Base directory where output data should be saved.
+
+    dirRun : str
+        Subdirectory name specific to the meteor event.
+
+    standard_filename : str, optional
+        Name of the standard file to read (default is 'standard.txt').
+
+    Returns
+    -------
+    standard : str
+        The content of the 'standard.txt' file.
+
+    Notes
+    -----
+    - The function will create the directory `dirGr2/dirRun` if it doesn't exist.
+    - The Excel file is saved as `dirGr2/dirRun_without_slash.xlsx`.
+    - This function does not return the DataFrame itself, only the contents of the standard file.
+    """
+    # Read the standard configuration file
+    standard_path = os.path.join(dirGr2, standard_filename)
+    with open(standard_path, 'r') as file:
+        standard = file.read()
+
+    # Create the output directory
+    os.makedirs(os.path.dirname(os.path.join(dirGr2, dirRun)), exist_ok=True)
+
+    # Save DataFrame as Excel
+    excel_path = os.path.join(dirGr2, dirRun[:-1] + ".xlsx")
+    df.to_excel(excel_path, index=False)
+
+    print(f"Saved to: {dirGr2}")
+    return standard
+
+
+config = configure_event_parameters(dfR)
+standard_txt = save_event_data(config['df'], config['dirGr2'], config['dirRun'])
+
+import os
+import pandas as pd
+
+def export_results_and_read_standard(df, dirGr2 : str, dirRun : str, standard_filename : str ="standard.txt") -> standard [str]:
+    """
+    Reads a standard configuration file, creates output directories if needed,
+    and exports the given DataFrame to an Excel file.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing the event results to be saved (e.g., dfR).
+
+    dirGr2 : str
+        Root directory for storing files (e.g., '/home/user/Desktop/TG/').
+
+    dirRun : str
+        Subdirectory or event identifier (e.g., 'costaRica2019FlareA/').
+
+    standard_filename : str, optional
+        Name of the standard configuration file to read (default is 'standard.txt').
+
+    Returns
+    -------
+    standard : str
+        The contents of the 'standard.txt' file.
+
+    Notes
+    -----
+    - The Excel file will be saved as `dirGr2/dirRun[:-1].xlsx`.
+    - Any required directories will be created automatically.
+    - This function prints the base directory path after completion.
+    """
+    # Read the standard.txt content
+    standard_path = os.path.join(dirGr2, standard_filename)
+    with open(standard_path, 'r') as file:
+        standard = file.read()
+
+    # Ensure output directory exists
+    output_dir = os.path.dirname(os.path.join(dirGr2, dirRun))
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Save DataFrame to Excel
+    excel_path = os.path.join(dirGr2, dirRun[:-1] + ".xlsx")
+    df.to_excel(excel_path, index=False)
+
+    print(f"Data saved to: {dirGr2}")
+    return standard
+
+standard = export_results_and_read_standard(dfR, '/home/felipe/Desktop/TG/', 'costaRica2019FlareA/')
+
+import os
+import shutil
+from os.path import exists
+
+def generate_configuration_files(df, dirGr2, dirRun, standard, dateM,
+                                  opcao=3, densMeteor='2.2e-3',
+                                  tInt='-500', tIntStep='-0.01', massaInt='250'):
+    """
+    Generates configuration files for each valid camera pair from a DataFrame,
+    using a standard template. Also writes a summary file (`filesRun.txt`) listing
+    all generated config files.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame with observation and tracking data from multiple cameras.
+
+    dirGr2 : str
+        Base directory where the files will be stored.
+
+    dirRun : str
+        Subdirectory under `dirGr2` for this specific run (e.g., 'event2023/').
+
+    standard : str
+        Template string containing placeholders for configuration values.
+
+    dateM : list[int]
+        Date and time in the format [year, month, day, hour, minute, second].
+
+    opcao : int, optional
+        Option for formatting the configuration based on tracking method (1, 2 or 3). Default is 3.
+
+    densMeteor : str, optional
+        Meteor density to insert into the configuration. Default is '2.2e-3'.
+
+    tInt : str, optional
+        Initial time integration value. Default is '-500'.
+
+    tIntStep : str, optional
+        Time step for integration. Default is '-0.01'.
+
+    massaInt : str, optional
+        Meteor initial mass. Default is '250'.
+
+    Returns
+    -------
+    int
+        Number of valid camera pairs processed.
+
+    Notes
+    -----
+    - Only pairs with the same timestamp suffix (last 3 characters) are processed.
+    - The function avoids overwriting outputs from already completed simulations
+      (checked via 'dados.txt' file).
+    - Copies generated files into both the root and run-specific directories.
+    - Creates and updates `filesRun.txt` with all config file names.
+    """
+    par = 0
+    arqRun = open(os.path.join(dirGr2, "filesRun.txt"), 'w')
+    arqRun.write("#comments lines #\n")
+
+    for k in range(0, 2):
+        for i in range(0, len(df) - 1):
+            for j in range(i + 1, len(df)):
+                if df.loc[i, 'camera'][-3:] != df.loc[j, 'camera'][-3:]:
+                    continue
+                if df.loc[i, 'camera'][:3] != df.loc[j, 'camera'][:3]:
+                    arqCamera = standard[:]
+                    if k == 0:
+                        nameCamera = df.loc[i, 'camera'] + "_" + df.loc[j, 'camera']
+                        arqCamera = arqCamera.replace("cam=cam", "cam=1")
+                        camOpcao1 = i
+                    else:
+                        nameCamera = df.loc[j, 'camera'] + "_" + df.loc[i, 'camera']
+                        arqCamera = arqCamera.replace("cam=cam", "cam=2")
+                        camOpcao1 = j
+
+                    print(nameCamera, end=' - ')
+
+                    substitutions = {
+                        "ano=ano": f"ano={dateM[0]}",
+                        "mes=mes": f"mes={dateM[1]}",
+                        "dia=dia": f"dia={dateM[2]}",
+                        "hora=hora": f"hora={dateM[3]}",
+                        "minuto=minuto": f"minuto={dateM[4]}",
+                        "segundo=segundo": f"segundo={dateM[5]}",
+                        "densMeteor=densMeteor": f"densMeteor={densMeteor}",
+                        "massaInt=massaInt": f"massaInt={massaInt}",
+                        "tInt=tInt": f"tInt={tInt}",
+                        "tIntStep=tIntStep": f"tIntStep={tIntStep}",
+                        "meteorN=meteorN": f"meteorN={dirRun}{nameCamera}",
+                        "opcao=opcao": f"opcao={opcao}"
+                    }
+
+                    for key, value in substitutions.items():
+                        arqCamera = arqCamera.replace(key, value)
+
+                    if opcao == 1:
+                        arqCamera = arqCamera.replace("P1lat=P1lat", f"P1lat={df.loc[camOpcao1,'_lat1']}")
+                        arqCamera = arqCamera.replace("P1lon=P1lon", f"P1lon={df.loc[camOpcao1,'_lng1']}")
+                        arqCamera = arqCamera.replace("P1alt=P1alt", f"P1alt={df.loc[camOpcao1,'_H1']}")
+                        arqCamera = arqCamera.replace("P2lat=P2lat", f"P2lat={df.loc[camOpcao1,'_lat2']}")
+                        arqCamera = arqCamera.replace("P2lon=P2lon", f"P2lon={df.loc[camOpcao1,'_lng2']}")
+                        arqCamera = arqCamera.replace("P2alt=P2alt", f"P2alt={df.loc[camOpcao1,'_H2']}")
+                        arqCamera = arqCamera.replace("deltaT=deltaT", f"deltaT={df.loc[camOpcao1,'dur']}")
+                    elif opcao in [2, 3]:
+                        arqCamera = arqCamera.replace("deltaT1=deltaT1", f"deltaT1={df.loc[i,'dur']}")
+                        arqCamera = arqCamera.replace("deltaT2=deltaT2", f"deltaT2={df.loc[j,'dur']}")
+                        for idx, suffix in zip([i, j], ['1', '2']):
+                            arqCamera = arqCamera.replace(f"alt{suffix}=alt{suffix}", f"alt{suffix}={df.loc[idx,'alt']}")
+                            arqCamera = arqCamera.replace(f"lon{suffix}=lon{suffix}", f"lon{suffix}={df.loc[idx,'lon']}")
+                            arqCamera = arqCamera.replace(f"lat{suffix}=lat{suffix}", f"lat{suffix}={df.loc[idx,'lat']}")
+
+                        if opcao == 2:
+                            for idx, suffix in zip([i, j], ['1', '2']):
+                                arqCamera = arqCamera.replace(f"az{suffix}Ini=az{suffix}Ini", f"az{suffix}Ini={df.loc[idx,'azIni']}")
+                                arqCamera = arqCamera.replace(f"h{suffix}Ini=h{suffix}Ini", f"h{suffix}Ini={df.loc[idx,'elIni']}")
+                                arqCamera = arqCamera.replace(f"az{suffix}Fin=az{suffix}Fin", f"az{suffix}Fin={df.loc[idx,'azFin']}")
+                                arqCamera = arqCamera.replace(f"h{suffix}Fin=h{suffix}Fin", f"h{suffix}Fin={df.loc[idx,'elFin']}")
+                        else:
+                            for idx, suffix in zip([i, j], ['1', '2']):
+                                arqCamera = arqCamera.replace(f"ra{suffix}Ini=ra{suffix}Ini", f"ra{suffix}Ini={df.loc[idx,'raIni']}")
+                                arqCamera = arqCamera.replace(f"dec{suffix}Ini=dec{suffix}Ini", f"dec{suffix}Ini={df.loc[idx,'decIni']}")
+                                arqCamera = arqCamera.replace(f"ra{suffix}Fin=ra{suffix}Fin", f"ra{suffix}Fin={df.loc[idx,'raFin']}")
+                                arqCamera = arqCamera.replace(f"dec{suffix}Fin=dec{suffix}Fin", f"dec{suffix}Fin={df.loc[idx,'decFin']}")
+
+                    # Check if simulation has already run
+                    result_path = os.path.join(dirGr2, dirRun, nameCamera, "dados.txt")
+                    if exists(result_path):
+                        with open(result_path, 'r') as f:
+                            t = f.read()
+                            if any(keyword in t for keyword in ['slow velocity', 'semi-major axis (AU) -  max:', 'hyberbolic orbit']):
+                                print('Already processed:', nameCamera)
+                                continue
+
+                    # Save config file
+                    arqName = nameCamera + ".txt"
+                    config_path = os.path.join(dirGr2, arqName)
+                    with open(config_path, 'w') as infile:
+                        infile.write(arqCamera)
+
+                    # Copy to run directory
+                    dest_path = os.path.join(dirGr2, dirRun, arqName)
+                    shutil.copyfile(config_path, dest_path)
+
+                    arqRun.write(arqName + "\n")
+                    par += 1
+
+    print(par)
+    arqRun.write("#not delete this line #")
+    arqRun.close()
+
+    shutil.copyfile(os.path.join(dirGr2, "filesRun.txt"),
+                    os.path.join(dirGr2, dirRun, "filesRun.txt"))
+
+    return par
+
+pairs_processed = generate_configuration_files(
+    df=dfR,
+    dirGr2='/home/felipe/Desktop/TG/',
+    dirRun='costaRica2019FlareA/',
+    standard=standard,
+    dateM=[2019, 4, 24, 3, 7, 24],
+    opcao=3
+
+)

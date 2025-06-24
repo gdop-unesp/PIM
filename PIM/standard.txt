@@ -1,0 +1,68 @@
+# Arquivo de parâmetros padrão para processamento de flares de meteoros
+# Comments são ignorados
+
+cam=cam
+ano=ano
+mes=mes
+dia=dia
+hora=hora
+minuto=minuto
+segundo=segundo
+
+densMeteor=densMeteor
+massaInt=massaInt
+tInt=tInt
+tIntStep=tIntStep
+
+meteorN=meteorN
+opcao=opcao
+
+# Parâmetros da câmera 1
+P1lat=P1lat
+P1lon=P1lon
+P1alt=P1alt
+P2lat=P2lat
+P2lon=P2lon
+P2alt=P2alt
+
+# Delta T e azimute/elevação para a câmera 1
+deltaT=deltaT
+
+# Caso opcao seja 1
+P1lat=P1lat
+P1lon=P1lon
+P1alt=P1alt
+P2lat=P2lat
+P2lon=P2lon
+P2alt=P2alt
+deltaT=deltaT
+
+# Caso opcao seja 2 ou 3
+deltaT1=deltaT1
+deltaT2=deltaT2
+lat1=lat1
+lon1=lon1
+alt1=alt1
+lat2=lat2
+lon2=lon2
+alt2=alt2
+
+az1Ini=az1Ini
+h1Ini=h1Ini
+az1Fin=az1Fin
+h1Fin=h1Fin
+
+az2Ini=az2Ini
+h2Ini=h2Ini
+az2Fin=az2Fin
+h2Fin=h2Fin
+
+ra1Ini=ra1Ini
+dec1Ini=dec1Ini
+ra2Ini=ra2Ini
+dec2Ini=dec2Ini
+
+ra1Fin=ra1Fin
+dec1Fin=dec1Fin
+ra2Fin=ra2Fin
+dec2Fin=dec2Fin
