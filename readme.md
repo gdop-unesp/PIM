@@ -12,14 +12,12 @@
 
 # Index
 
-* [Title and Cover Image](#title-and-cover-image)
 * [Project Description](#project-description)
 * [Technologies Used](#technologies-used)
-* [Features](#features-and-application-demo)
+* [Features](#features)
 * [Project Access](#project-access)
 * [Code Versioning (Git)](#code-versioning-git)
 * [Contributors](#contributors)
-* [Project Developers](#project-developers)
 * [License](#license)
 
 
@@ -114,7 +112,9 @@ Excel spreadsheets with paired data.
     <p align="center">
   <img src="Arquivos/7+.jpeg" alt="alt text" />
   </p>
-  
+  <p align="center">
+  <img src="Arquivos/StrewnField.png" alt="alt text" />
+  </p>
 
 `Wind Cluster`
 
@@ -124,9 +124,7 @@ Spatial dynamics simulations.
 
 Wind data clustering graphs.
 
-   <p align="center">
-  <img src="Arquivos/8.png" alt="alt text" />
-  </p>
+   
 
 `Wind Table Generator`
 
@@ -193,7 +191,10 @@ git push origin main
 
 # Contributors
 
-# Project Developers
+| [<img loading="lazy" src="https://avatars.githubusercontent.com/u/45697536?v=4" width=115><br><sub>Natália Carvalhinha</sub>](https://github.com/nataliacarvalhinha) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/202051526?s=400&v=4" width=115><br><sub>Felipe Okamura</sub>](https://github.com/felipeokamura01) |  
+| :---: | :---: | 
+
+
 
 # License
 
