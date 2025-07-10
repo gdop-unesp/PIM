@@ -211,9 +211,24 @@ git push origin main
 
 
 # Contributors
+[Daniela Cardozo Mourão](https://github.com/dcmourao) – São Paulo State University - UNESP
 
-| [<img loading="lazy" src="https://avatars.githubusercontent.com/u/45697536?v=4" width=115><br><sub>Natália Carvalhinha</sub>](https://github.com/nataliacarvalhinha) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/202051526?s=400&v=4" width=115><br><sub>Felipe Okamura</sub>](https://github.com/felipeokamura01) |  
-| :---: | :---: | 
+[Barbara Celi Braga Camargo](https://github.com/bcbcfisica) – Valongo Observatory - Federal University of Rio de Janeiro – UFRJ
+
+[Natália Carvalhinha Sacco de Lemos Basto](https://github.com/nataliacarvalhinha) - Federal University of Rio de Janeiro – UFRJ
+
+Othon Cabo Winter – São Paulo State University – UNESP
+
+Rafael Sfair – São Paulo State University – UNESP
+
+[Felipe Okamura](https://github.com/felipeokamura01) – São Paulo State University – UNESP
+
+Rafael Blandy de Purgly – São Paulo State University – UNESP
+
+Pedro Ricardo Borba Takahashi – São Paulo State University – UNESP
+
+Rafael de Moura Ramos – São Paulo State University – UNESP
+
 
 
 
