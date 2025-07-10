@@ -88,30 +88,60 @@ Wind speed and direction graphs.
 Excel spreadsheets with paired data.
 
 
+
   <p align="center">
   <img src="Arquivos/0.png" alt="alt text" />
   </p>
   <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
+  <p align="center">
   <img src="Arquivos/1.jpeg" alt="alt text" />
   </p>
   <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
+  <p align="center">
   <img src="Arquivos/2.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/3.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/4.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/5.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/6.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/7+.jpeg" alt="alt text" />
-  </p>
+  </p> 
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
+  
+
+
+
+  
   <p align="center">
   <img src="Arquivos/StrewnField.png" alt="alt text" />
   </p>
