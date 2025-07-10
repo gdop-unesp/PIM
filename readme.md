@@ -12,14 +12,12 @@
 
 # Index
 
-* [Title and Cover Image](#title-and-cover-image)
 * [Project Description](#project-description)
 * [Technologies Used](#technologies-used)
-* [Features](#features-and-application-demo)
+* [Features](#features)
 * [Project Access](#project-access)
 * [Code Versioning (Git)](#code-versioning-git)
 * [Contributors](#contributors)
-* [Project Developers](#project-developers)
 * [License](#license)
 
 
@@ -90,31 +88,54 @@ Wind speed and direction graphs.
 Excel spreadsheets with paired data.
 
 
+
   <p align="center">
   <img src="Arquivos/0.png" alt="alt text" />
   </p>
   <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
+  <p align="center">
   <img src="Arquivos/1.jpeg" alt="alt text" />
   </p>
   <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
+  <p align="center">
   <img src="Arquivos/2.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/3.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/4.jpeg" alt="alt text" />
   </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
     <p align="center">
   <img src="Arquivos/5.jpeg" alt="alt text" />
   </p>
-    <p align="center">
-  <img src="Arquivos/6.jpeg" alt="alt text" />
-  </p>
-    <p align="center">
-  <img src="Arquivos/7+.jpeg" alt="alt text" />
-  </p>
+  <p align="center">
+  Credits: Daniela Cardozo Mourão
+ </p>  
   
+  
+ 
+  
+
+
+
+  
+  <p align="center">
+  <img src="Arquivos/StrewnField.png" alt="alt text" />
+  </p>
 
 `Wind Cluster`
 
@@ -124,9 +145,7 @@ Spatial dynamics simulations.
 
 Wind data clustering graphs.
 
-   <p align="center">
-  <img src="Arquivos/8.png" alt="alt text" />
-  </p>
+   
 
 `Wind Table Generator`
 
@@ -192,8 +211,26 @@ git push origin main
 
 
 # Contributors
+[Daniela Cardozo Mourão](https://github.com/dcmourao) – São Paulo State University - UNESP
 
-# Project Developers
+[Barbara Celi Braga Camargo](https://github.com/bcbcfisica) – Valongo Observatory - Federal University of Rio de Janeiro – UFRJ
+
+[Natália Carvalhinha Sacco de Lemos Basto](https://github.com/nataliacarvalhinha) - Federal University of Rio de Janeiro – UFRJ
+
+Othon Cabo Winter – São Paulo State University – UNESP
+
+Rafael Sfair – São Paulo State University – UNESP
+
+[Felipe Okamura](https://github.com/felipeokamura01) – São Paulo State University – UNESP
+
+Rafael Blandy de Purgly – São Paulo State University – UNESP
+
+Pedro Ricardo Borba Takahashi – São Paulo State University – UNESP
+
+Rafael de Moura Ramos – São Paulo State University – UNESP
+
+
+
 
 # License
 
